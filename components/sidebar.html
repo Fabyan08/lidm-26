@@ -1,0 +1,58 @@
+<!-- SIDEBAR (Solid Red) -->
+<aside
+  class="w-64 md:w-72 flex-shrink-0 bg-brand-500 text-white flex flex-col p-6 h-full overflow-y-auto"
+>
+  <!-- Profile Section -->
+  <div class="flex items-center gap-4 mt-4 mb-12">
+    <div class="relative">
+      <img
+        src="https://ui-avatars.com/api/?name=Prof+Hendra&background=fff&color=D62828"
+        alt="Profile"
+        class="w-12 h-12 rounded-xl object-cover border-2 border-white/20 shadow-sm"
+      />
+      <span
+        class="absolute -top-1 -right-1 bg-white text-brand-500 font-bold text-[10px] w-5 h-5 flex items-center justify-center rounded-full shadow-md border border-brand-500"
+        >4</span
+      >
+    </div>
+    <div>
+      <h3 class="font-bold text-white text-lg tracking-tight">Prof. Hendra</h3>
+      <p class="text-white/70 text-sm font-medium">hendra@veritas.edu</p>
+    </div>
+  </div>
+
+  <!-- Navigation Menu -->
+  <nav class="flex flex-col gap-2 font-medium">
+    <button
+      onclick="switchSidebar('dashboard')"
+      id="nav-dashboard"
+      class="nav-item text-left px-4 py-3 rounded-xl hover:bg-white/10 transition-colors text-white/80 hover:text-white"
+    >
+      Dashboard
+    </button>
+    <button
+      onclick="switchSidebar('composer')"
+      id="nav-composer"
+      class="nav-item text-left px-4 py-3 rounded-xl bg-white/15 text-white font-bold transition-colors"
+    >
+      Penyusun Kasus
+    </button>
+    <button
+      class="text-left px-4 py-3 rounded-xl hover:bg-white/10 transition-colors text-white/80 hover:text-white"
+    >
+      Manajemen Kelas
+    </button>
+    <button
+      class="text-left px-4 py-3 rounded-xl hover:bg-white/10 transition-colors text-white/80 hover:text-white"
+    >
+      Manajemen Kasus
+    </button>
+    <button
+      class="text-left px-4 py-3 rounded-xl hover:bg-white/10 transition-colors text-white/80 hover:text-white"
+    >
+      Modul Belajar
+    </button>
+  </nav>
+
+  
+</aside>

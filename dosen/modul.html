@@ -1,0 +1,1014 @@
+<!doctype html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>VeritasLab - Modul Belajar</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            fontFamily: { sans: ['"Plus Jakarta Sans"', "sans-serif"] },
+            colors: {
+              brand: {
+                500: "#D62828", // Solid red
+                600: "#B92020",
+                700: "#9B1919",
+              },
+            },
+          },
+        },
+      };
+    </script>
+    <style>
+      body {
+        background-color: #d62828;
+      }
+      .view-section {
+        display: none;
+      }
+      .view-section.active {
+        display: block;
+        animation: fadeIn 0.3s ease-in-out;
+      }
+      .tab-content {
+        display: none;
+      }
+      .tab-content.active {
+        display: block;
+        animation: fadeIn 0.3s ease-in-out;
+      }
+
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+          transform: translateY(5px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      .main-scroll::-webkit-scrollbar {
+        width: 6px;
+      }
+      .main-scroll::-webkit-scrollbar-track {
+        background: transparent;
+      }
+      .main-scroll::-webkit-scrollbar-thumb {
+        background: #e2e8f0;
+        border-radius: 10px;
+      }
+      .main-scroll::-webkit-scrollbar-thumb:hover {
+        background: #cbd5e1;
+      }
+    </style>
+  </head>
+  <body
+    class="h-screen w-screen overflow-hidden flex p-4 text-slate-800 font-sans antialiased"
+  >
+    <!-- ================= SIDEBAR ================= -->
+    <aside
+      class="w-[260px] shrink-0 flex flex-col justify-between text-white pb-2 p-4 pt-4"
+    >
+      <div>
+        <!-- User Profile -->
+        <div class="flex items-center gap-3 mb-10 px-2">
+          <div
+            class="w-12 h-12 bg-white rounded-xl text-brand-500 flex items-center justify-center font-extrabold text-xl shadow-sm"
+          >
+            PH
+          </div>
+          <div>
+            <div class="font-bold text-lg leading-tight">Prof. Hendra</div>
+            <div class="text-xs text-white/80 font-medium mt-0.5">
+              hendra@veritas.edu
+            </div>
+          </div>
+        </div>
+
+        <!-- Navigation -->
+        <nav class="space-y-2">
+          <button
+            class="w-full text-left px-5 py-3.5 rounded-xl hover:bg-white/10 transition-colors font-medium"
+          >
+            Dashboard
+          </button>
+          <button
+            class="w-full text-left px-5 py-3.5 rounded-xl hover:bg-white/10 transition-colors font-medium"
+          >
+            Penyusun Kasus
+          </button>
+          <button
+            class="w-full text-left px-5 py-3.5 rounded-xl hover:bg-white/10 transition-colors font-medium"
+          >
+            Manajemen Kelas
+          </button>
+          <button
+            class="w-full text-left px-5 py-3.5 rounded-xl hover:bg-white/10 transition-colors font-medium"
+          >
+            Manajemen Kasus
+          </button>
+          <!-- Active State -->
+          <button
+            class="w-full text-left px-5 py-3.5 rounded-xl bg-white/20 font-bold transition-colors"
+          >
+            Modul Belajar
+          </button>
+        </nav>
+      </div>
+    </aside>
+
+    <!-- ================= MAIN CONTENT ================= -->
+    <main
+      class="flex-1 bg-white rounded-[2rem] flex flex-col overflow-hidden shadow-2xl relative"
+    >
+      <!-- SCROLLABLE CONTENT AREA -->
+      <div
+        class="flex-1 overflow-y-auto px-10 pt-10 pb-10 main-scroll relative"
+      >
+        <!-- Global Logo (Absolute top right) -->
+        <div
+          class="absolute top-10 right-10 text-xl font-extrabold flex items-center gap-2 text-slate-800 z-10"
+        >
+          <i class="ph-fill ph-fingerprint text-brand-500 text-2xl"></i>
+          Veritas<span class="text-brand-500">Lab</span>
+        </div>
+
+        <!-- ================= VIEW 1: MODUL LIST ================= -->
+        <div id="view-modul-list" class="view-section active mt-2">
+          <!-- Header -->
+          <div class="flex justify-between items-start mb-10 pr-48">
+            <div>
+              <h1 class="text-[32px] font-bold mb-1 text-slate-900">
+                Modul Belajar
+              </h1>
+              <p class="text-slate-500 font-medium text-[15px]">
+                Kelola seluruh materi pembelajaran investigasi kriminal sebagai
+                bekal mahasiswa sebelum mengerjakan studi kasus.
+              </p>
+            </div>
+            <button
+              onclick="switchView('view-modul-add')"
+              class="px-6 py-2.5 bg-brand-500 text-white rounded-xl font-bold flex items-center gap-2 hover:bg-brand-600 transition-colors shadow-lg shadow-brand-500/20 shrink-0"
+            >
+              <i class="ph-bold ph-plus"></i> Tambah Modul
+            </button>
+          </div>
+
+          <!-- Statistik -->
+          <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+            <div
+              class="border border-slate-200 rounded-2xl p-5 hover:border-slate-300 transition-colors bg-slate-50/50"
+            >
+              <div class="text-sm font-bold text-slate-500 mb-1">
+                Total Modul
+              </div>
+              <div class="text-3xl font-extrabold text-slate-900">18</div>
+            </div>
+            <div
+              class="border border-slate-200 rounded-2xl p-5 hover:border-slate-300 transition-colors"
+            >
+              <div
+                class="text-sm font-bold text-slate-500 mb-1 flex items-center gap-2"
+              >
+                <i class="ph-fill ph-video-camera text-blue-500"></i> Video
+                Pembelajaran
+              </div>
+              <div class="text-3xl font-extrabold text-slate-700">7</div>
+            </div>
+            <div
+              class="border border-slate-200 rounded-2xl p-5 hover:border-slate-300 transition-colors"
+            >
+              <div
+                class="text-sm font-bold text-slate-500 mb-1 flex items-center gap-2"
+              >
+                <i class="ph-fill ph-article text-amber-500"></i> Artikel
+              </div>
+              <div class="text-3xl font-extrabold text-slate-700">5</div>
+            </div>
+            <div
+              class="border border-slate-200 rounded-2xl p-5 hover:border-slate-300 transition-colors"
+            >
+              <div
+                class="text-sm font-bold text-slate-500 mb-1 flex items-center gap-2"
+              >
+                <i class="ph-fill ph-file-pdf text-brand-500"></i> Dokumen
+              </div>
+              <div class="text-3xl font-extrabold text-slate-700">6</div>
+            </div>
+          </div>
+
+          <!-- Filter -->
+          <div class="flex flex-wrap gap-4 mb-8">
+            <div class="relative flex-1 min-w-[200px]">
+              <i
+                class="ph-bold ph-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
+              ></i>
+              <input
+                type="text"
+                placeholder="Cari Modul..."
+                class="w-full border border-slate-200 rounded-xl pl-11 pr-4 py-2.5 text-sm font-medium focus:outline-none focus:border-brand-500"
+              />
+            </div>
+            <select
+              class="border border-slate-200 rounded-xl px-4 py-2.5 text-sm font-bold text-slate-600 focus:outline-none focus:border-brand-500 cursor-pointer bg-white"
+            >
+              <option>Kategori: Semua</option>
+              <option>Dasar Investigasi</option>
+              <option>TKP</option>
+              <option>Barang Bukti</option>
+              <option>Wawancara</option>
+              <option>Kriminologi</option>
+              <option>Crime Intelligence</option>
+            </select>
+            <select
+              class="border border-slate-200 rounded-xl px-4 py-2.5 text-sm font-bold text-slate-600 focus:outline-none focus:border-brand-500 cursor-pointer bg-white"
+            >
+              <option>Jenis: Semua</option>
+              <option>Video</option>
+              <option>PDF</option>
+              <option>Artikel</option>
+              <option>Presentasi</option>
+            </select>
+          </div>
+
+          <!-- Daftar Modul (Cards) -->
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <!-- Card 1 -->
+            <div
+              class="border border-slate-200 rounded-3xl p-6 hover:shadow-lg transition-shadow bg-white flex flex-col h-full relative group"
+            >
+              <div class="flex justify-between items-start mb-4">
+                <div
+                  class="w-12 h-12 bg-brand-50 text-brand-500 rounded-xl flex items-center justify-center text-2xl"
+                >
+                  <i class="ph-fill ph-file-pdf"></i>
+                </div>
+                <span
+                  class="bg-slate-100 text-slate-600 text-[10px] font-extrabold px-3 py-1 rounded-full uppercase tracking-wide"
+                  >PDF</span
+                >
+              </div>
+              <h3 class="text-xl font-bold text-slate-900 mb-2 leading-tight">
+                Dasar Investigasi Kriminal
+              </h3>
+              <div
+                class="text-xs font-bold bg-slate-50 text-slate-500 px-2.5 py-1 rounded-lg w-fit mb-6"
+              >
+                Investigasi
+              </div>
+
+              <div
+                class="grid grid-cols-2 gap-4 mb-6 mt-auto border-t border-b border-slate-100 py-4"
+              >
+                <div>
+                  <div
+                    class="text-[11px] font-bold text-slate-400 uppercase mb-1"
+                  >
+                    Durasi Baca
+                  </div>
+                  <div class="text-sm font-bold text-slate-700">20 Menit</div>
+                </div>
+                <div>
+                  <div
+                    class="text-[11px] font-bold text-slate-400 uppercase mb-1"
+                  >
+                    Digunakan Pada
+                  </div>
+                  <div class="text-sm font-bold text-slate-700">5 Kasus</div>
+                </div>
+              </div>
+
+              <div class="grid grid-cols-4 gap-2">
+                <button
+                  onclick="openModulDetail()"
+                  class="col-span-2 py-2.5 bg-slate-900 text-white rounded-xl text-sm font-bold hover:bg-slate-800 transition-colors"
+                >
+                  Lihat
+                </button>
+                <button
+                  class="py-2.5 border border-slate-200 text-slate-600 rounded-xl text-sm font-bold hover:bg-slate-50 transition-colors flex justify-center"
+                >
+                  <i class="ph-bold ph-pencil-simple text-lg"></i>
+                </button>
+                <button
+                  class="py-2.5 border border-slate-200 text-slate-400 rounded-xl text-sm font-bold hover:text-red-500 hover:bg-red-50 hover:border-red-200 transition-colors flex justify-center"
+                >
+                  <i class="ph-bold ph-trash text-lg"></i>
+                </button>
+              </div>
+            </div>
+
+            <!-- Card 2 -->
+            <div
+              class="border border-slate-200 rounded-3xl p-6 hover:shadow-lg transition-shadow bg-white flex flex-col h-full relative group"
+            >
+              <div class="flex justify-between items-start mb-4">
+                <div
+                  class="w-12 h-12 bg-blue-50 text-blue-500 rounded-xl flex items-center justify-center text-2xl"
+                >
+                  <i class="ph-fill ph-video-camera"></i>
+                </div>
+                <span
+                  class="bg-slate-100 text-slate-600 text-[10px] font-extrabold px-3 py-1 rounded-full uppercase tracking-wide"
+                  >Video</span
+                >
+              </div>
+              <h3 class="text-xl font-bold text-slate-900 mb-2 leading-tight">
+                Teknik Pengamanan TKP
+              </h3>
+              <div
+                class="text-xs font-bold bg-slate-50 text-slate-500 px-2.5 py-1 rounded-lg w-fit mb-6"
+              >
+                TKP
+              </div>
+
+              <div
+                class="grid grid-cols-2 gap-4 mb-6 mt-auto border-t border-b border-slate-100 py-4"
+              >
+                <div>
+                  <div
+                    class="text-[11px] font-bold text-slate-400 uppercase mb-1"
+                  >
+                    Durasi
+                  </div>
+                  <div class="text-sm font-bold text-slate-700">15 Menit</div>
+                </div>
+                <div>
+                  <div
+                    class="text-[11px] font-bold text-slate-400 uppercase mb-1"
+                  >
+                    Digunakan Pada
+                  </div>
+                  <div class="text-sm font-bold text-slate-700">8 Kasus</div>
+                </div>
+              </div>
+
+              <div class="grid grid-cols-4 gap-2">
+                <button
+                  onclick="openModulDetail()"
+                  class="col-span-2 py-2.5 bg-slate-900 text-white rounded-xl text-sm font-bold hover:bg-slate-800 transition-colors"
+                >
+                  Lihat
+                </button>
+                <button
+                  class="py-2.5 border border-slate-200 text-slate-600 rounded-xl text-sm font-bold hover:bg-slate-50 transition-colors flex justify-center"
+                >
+                  <i class="ph-bold ph-pencil-simple text-lg"></i>
+                </button>
+                <button
+                  class="py-2.5 border border-slate-200 text-slate-400 rounded-xl text-sm font-bold hover:text-red-500 hover:bg-red-50 hover:border-red-200 transition-colors flex justify-center"
+                >
+                  <i class="ph-bold ph-trash text-lg"></i>
+                </button>
+              </div>
+            </div>
+
+            <!-- Card 3 -->
+            <div
+              class="border border-slate-200 rounded-3xl p-6 hover:shadow-lg transition-shadow bg-white flex flex-col h-full relative group"
+            >
+              <div class="flex justify-between items-start mb-4">
+                <div
+                  class="w-12 h-12 bg-amber-50 text-amber-500 rounded-xl flex items-center justify-center text-2xl"
+                >
+                  <i class="ph-fill ph-article"></i>
+                </div>
+                <span
+                  class="bg-slate-100 text-slate-600 text-[10px] font-extrabold px-3 py-1 rounded-full uppercase tracking-wide"
+                  >Artikel</span
+                >
+              </div>
+              <h3 class="text-xl font-bold text-slate-900 mb-2 leading-tight">
+                Chain of Custody
+              </h3>
+              <div
+                class="text-xs font-bold bg-slate-50 text-slate-500 px-2.5 py-1 rounded-lg w-fit mb-6"
+              >
+                Barang Bukti
+              </div>
+
+              <div
+                class="grid grid-cols-2 gap-4 mb-6 mt-auto border-t border-b border-slate-100 py-4"
+              >
+                <div>
+                  <div
+                    class="text-[11px] font-bold text-slate-400 uppercase mb-1"
+                  >
+                    Durasi Baca
+                  </div>
+                  <div class="text-sm font-bold text-slate-700">25 Menit</div>
+                </div>
+                <div>
+                  <div
+                    class="text-[11px] font-bold text-slate-400 uppercase mb-1"
+                  >
+                    Digunakan Pada
+                  </div>
+                  <div class="text-sm font-bold text-slate-700">12 Kasus</div>
+                </div>
+              </div>
+
+              <div class="grid grid-cols-4 gap-2">
+                <button
+                  class="col-span-2 py-2.5 bg-slate-900 text-white rounded-xl text-sm font-bold hover:bg-slate-800 transition-colors"
+                >
+                  Lihat
+                </button>
+                <button
+                  class="py-2.5 border border-slate-200 text-slate-600 rounded-xl text-sm font-bold hover:bg-slate-50 transition-colors flex justify-center"
+                >
+                  <i class="ph-bold ph-pencil-simple text-lg"></i>
+                </button>
+                <button
+                  class="py-2.5 border border-slate-200 text-slate-400 rounded-xl text-sm font-bold hover:text-red-500 hover:bg-red-50 hover:border-red-200 transition-colors flex justify-center"
+                >
+                  <i class="ph-bold ph-trash text-lg"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ================= VIEW 2: MODUL DETAIL ================= -->
+        <div id="view-modul-detail" class="view-section mt-2">
+          <div
+            class="mb-6 flex flex-col md:flex-row md:items-start justify-between gap-4 pr-48"
+          >
+            <div>
+              <button
+                onclick="switchView('view-modul-list')"
+                class="text-sm font-bold text-slate-400 hover:text-brand-500 flex items-center gap-1 mb-4 transition-colors"
+              >
+                <i class="ph-bold ph-arrow-left"></i> Kembali ke Daftar Modul
+              </button>
+              <div class="flex items-center gap-3 mb-2">
+                <span
+                  class="bg-blue-100 text-blue-700 text-[10px] font-extrabold px-2 py-0.5 rounded uppercase"
+                  ><i class="ph-bold ph-video-camera"></i> Video</span
+                >
+                <span
+                  class="bg-slate-100 text-slate-600 text-[10px] font-extrabold px-2 py-0.5 rounded uppercase"
+                  >TKP</span
+                >
+              </div>
+              <h2 class="text-3xl font-bold text-slate-900">
+                Teknik Pengamanan TKP
+              </h2>
+            </div>
+            <div class="flex gap-2">
+              <button
+                class="px-4 py-2 border border-slate-200 text-slate-600 rounded-lg text-sm font-bold hover:bg-slate-50 transition-colors flex items-center gap-2"
+              >
+                <i class="ph-bold ph-pencil-simple"></i> Edit
+              </button>
+            </div>
+          </div>
+
+          <!-- Tabs Navigation -->
+          <div class="border-b border-slate-200 mb-8 mt-4">
+            <nav class="flex gap-8 px-2 overflow-x-auto main-scroll">
+              <button
+                onclick="switchTab('info')"
+                id="tab-btn-info"
+                class="modul-tab-btn pb-4 font-bold text-brand-500 border-b-2 border-brand-500 whitespace-nowrap"
+              >
+                Informasi
+              </button>
+              <button
+                onclick="switchTab('materi')"
+                id="tab-btn-materi"
+                class="modul-tab-btn pb-4 font-bold text-slate-400 hover:text-slate-800 border-b-2 border-transparent whitespace-nowrap"
+              >
+                Materi
+              </button>
+              <button
+                onclick="switchTab('referensi')"
+                id="tab-btn-referensi"
+                class="modul-tab-btn pb-4 font-bold text-slate-400 hover:text-slate-800 border-b-2 border-transparent whitespace-nowrap"
+              >
+                Referensi
+              </button>
+              <button
+                onclick="switchTab('digunakan')"
+                id="tab-btn-digunakan"
+                class="modul-tab-btn pb-4 font-bold text-slate-400 hover:text-slate-800 border-b-2 border-transparent whitespace-nowrap"
+              >
+                Digunakan Pada
+              </button>
+            </nav>
+          </div>
+
+          <!-- Tab 1: Informasi -->
+          <div id="tab-info" class="tab-content active">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl">
+              <div class="space-y-6">
+                <div>
+                  <div class="text-xs font-bold text-slate-400 uppercase mb-1">
+                    Judul
+                  </div>
+                  <div class="font-bold text-slate-900 text-lg">
+                    Teknik Pengamanan TKP
+                  </div>
+                </div>
+                <div>
+                  <div class="text-xs font-bold text-slate-400 uppercase mb-1">
+                    Kategori
+                  </div>
+                  <div class="font-bold text-slate-900">TKP</div>
+                </div>
+                <div>
+                  <div class="text-xs font-bold text-slate-400 uppercase mb-1">
+                    Jenis
+                  </div>
+                  <div class="font-bold text-slate-900">Video Pembelajaran</div>
+                </div>
+                <div>
+                  <div class="text-xs font-bold text-slate-400 uppercase mb-1">
+                    Durasi
+                  </div>
+                  <div class="font-bold text-slate-900">15 Menit</div>
+                </div>
+                <div>
+                  <div class="text-xs font-bold text-slate-400 uppercase mb-1">
+                    Tingkat Kesulitan
+                  </div>
+                  <span
+                    class="bg-emerald-100 text-emerald-700 px-3 py-1 rounded-full text-xs font-extrabold uppercase"
+                    >Dasar (Basic)</span
+                  >
+                </div>
+              </div>
+              <div class="bg-slate-50 p-6 rounded-3xl border border-slate-100">
+                <div
+                  class="text-xs font-bold text-brand-500 uppercase mb-3 flex items-center gap-2"
+                >
+                  <i class="ph-fill ph-target"></i> Learning Outcome
+                </div>
+                <ul class="space-y-3 font-medium text-slate-700 text-sm">
+                  <li class="flex gap-3">
+                    <i class="ph-bold ph-check text-emerald-500 mt-0.5"></i>
+                    Mahasiswa mampu memahami batas-batas perimeter TKP.
+                  </li>
+                  <li class="flex gap-3">
+                    <i class="ph-bold ph-check text-emerald-500 mt-0.5"></i>
+                    Mahasiswa mengetahui peran petugas pertama di tempat
+                    kejadian (First Responder).
+                  </li>
+                  <li class="flex gap-3">
+                    <i class="ph-bold ph-check text-emerald-500 mt-0.5"></i>
+                    Mencegah kontaminasi silang (cross-contamination) bukti
+                    fisik.
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <!-- Tab 2: Materi -->
+          <div id="tab-materi" class="tab-content">
+            <div class="max-w-4xl">
+              <!-- Video Player Mockup -->
+              <div
+                class="bg-slate-900 rounded-3xl aspect-video relative overflow-hidden flex items-center justify-center shadow-lg border border-slate-200"
+              >
+                <img
+                  src="https://images.unsplash.com/photo-1584483766114-2cea6facdf57?auto=format&fit=crop&q=80&w=1600"
+                  alt="Video Thumbnail"
+                  class="absolute inset-0 w-full h-full object-cover opacity-50 mix-blend-overlay"
+                />
+
+                <!-- Play Button -->
+                <button
+                  class="relative z-10 w-20 h-20 bg-brand-500/90 hover:bg-brand-500 text-white rounded-full flex items-center justify-center text-3xl shadow-[0_0_30px_rgba(214,40,40,0.5)] transition-transform hover:scale-110"
+                >
+                  <i class="ph-fill ph-play ml-1"></i>
+                </button>
+
+                <!-- Video Controls (Decorative) -->
+                <div
+                  class="absolute bottom-0 left-0 w-full p-6 bg-gradient-to-t from-black/80 to-transparent"
+                >
+                  <div
+                    class="w-full bg-white/30 h-1.5 rounded-full mb-4 overflow-hidden"
+                  >
+                    <div class="bg-brand-500 w-1/3 h-full"></div>
+                  </div>
+                  <div
+                    class="flex justify-between text-white text-sm font-bold"
+                  >
+                    <div class="flex items-center gap-4">
+                      <i class="ph-fill ph-pause"></i>
+                      <i class="ph-fill ph-speaker-high"></i>
+                      <span>05:12 / 15:00</span>
+                    </div>
+                    <div class="flex items-center gap-4">
+                      <i class="ph-bold ph-closed-captioning"></i>
+                      <i class="ph-bold ph-gear"></i>
+                      <i class="ph-bold ph-corners-out"></i>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Tab 3: Referensi -->
+          <div id="tab-referensi" class="tab-content">
+            <div
+              class="max-w-4xl bg-white border border-slate-200 rounded-3xl overflow-hidden"
+            >
+              <div
+                class="p-6 border-b border-slate-100 bg-slate-50 flex items-center gap-3"
+              >
+                <div
+                  class="w-10 h-10 bg-brand-100 text-brand-600 rounded-xl flex items-center justify-center text-xl"
+                >
+                  <i class="ph-fill ph-books"></i>
+                </div>
+                <div>
+                  <h3 class="font-bold text-slate-900">
+                    Sumber Referensi Akademik
+                  </h3>
+                  <p class="text-xs text-slate-500 font-medium">
+                    Bahan bacaan tambahan terkait materi ini.
+                  </p>
+                </div>
+              </div>
+              <div class="divide-y divide-slate-100">
+                <div
+                  class="p-6 flex items-start gap-4 hover:bg-slate-50 transition-colors"
+                >
+                  <i
+                    class="ph-fill ph-book-bookmark text-slate-400 text-2xl mt-1"
+                  ></i>
+                  <div>
+                    <div class="font-bold text-slate-900 text-lg mb-1">
+                      Kitab Undang-Undang Hukum Acara Pidana (KUHAP)
+                    </div>
+                    <p class="text-sm text-slate-600 font-medium">
+                      Pasal 7 Ayat 1: Wewenang Penyelidik.
+                    </p>
+                  </div>
+                </div>
+                <div
+                  class="p-6 flex items-start gap-4 hover:bg-slate-50 transition-colors"
+                >
+                  <i
+                    class="ph-fill ph-file-text text-slate-400 text-2xl mt-1"
+                  ></i>
+                  <div>
+                    <div class="font-bold text-slate-900 text-lg mb-1">
+                      Perkap Polri No. 6 Tahun 2019
+                    </div>
+                    <p class="text-sm text-slate-600 font-medium">
+                      Penyidikan Tindak Pidana (SOP Pengamanan TKP).
+                    </p>
+                  </div>
+                </div>
+                <div
+                  class="p-6 flex items-start gap-4 hover:bg-slate-50 transition-colors"
+                >
+                  <i
+                    class="ph-fill ph-book-open text-slate-400 text-2xl mt-1"
+                  ></i>
+                  <div>
+                    <div class="font-bold text-slate-900 text-lg mb-1">
+                      Buku: "Kriminologi Forensik & Investigasi Modern"
+                    </div>
+                    <p class="text-sm text-slate-600 font-medium">
+                      Prof. Hendra, Bab 3: Pengamanan Perimeter, Hal 45-60.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Tab 4: Digunakan Pada -->
+          <div id="tab-digunakan" class="tab-content">
+            <div class="max-w-4xl">
+              <h3 class="font-bold text-slate-900 mb-6 text-lg">
+                Modul ini digunakan pada kasus:
+              </h3>
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <!-- Case Item -->
+                <div
+                  class="border border-slate-200 rounded-2xl p-5 hover:border-brand-500 transition-colors bg-white cursor-pointer group"
+                >
+                  <div class="text-xs font-bold text-slate-400 uppercase mb-2">
+                    Kasus #001
+                  </div>
+                  <div
+                    class="font-bold text-slate-900 text-lg mb-4 group-hover:text-brand-600 transition-colors"
+                  >
+                    Pencurian Laptop Ruang Kelas
+                  </div>
+                  <div
+                    class="flex justify-between items-center text-sm font-bold"
+                  >
+                    <span class="bg-slate-100 text-slate-600 px-2 py-1 rounded"
+                      >Investigasi TKP</span
+                    >
+                    <span class="text-brand-500 flex items-center gap-1"
+                      >Lihat Kasus <i class="ph-bold ph-arrow-right"></i
+                    ></span>
+                  </div>
+                </div>
+                <!-- Case Item -->
+                <div
+                  class="border border-slate-200 rounded-2xl p-5 hover:border-brand-500 transition-colors bg-white cursor-pointer group"
+                >
+                  <div class="text-xs font-bold text-slate-400 uppercase mb-2">
+                    Kasus #014
+                  </div>
+                  <div
+                    class="font-bold text-slate-900 text-lg mb-4 group-hover:text-brand-600 transition-colors"
+                  >
+                    Kasus Cyber Fraud Server Lab
+                  </div>
+                  <div
+                    class="flex justify-between items-center text-sm font-bold"
+                  >
+                    <span class="bg-slate-100 text-slate-600 px-2 py-1 rounded"
+                      >Digital Crime</span
+                    >
+                    <span class="text-brand-500 flex items-center gap-1"
+                      >Lihat Kasus <i class="ph-bold ph-arrow-right"></i
+                    ></span>
+                  </div>
+                </div>
+                <!-- Case Item -->
+                <div
+                  class="border border-slate-200 rounded-2xl p-5 hover:border-brand-500 transition-colors bg-white cursor-pointer group"
+                >
+                  <div class="text-xs font-bold text-slate-400 uppercase mb-2">
+                    Kasus #021
+                  </div>
+                  <div
+                    class="font-bold text-slate-900 text-lg mb-4 group-hover:text-brand-600 transition-colors"
+                  >
+                    Insiden Perusakan Fasilitas Perpustakaan
+                  </div>
+                  <div
+                    class="flex justify-between items-center text-sm font-bold"
+                  >
+                    <span class="bg-slate-100 text-slate-600 px-2 py-1 rounded"
+                      >Investigasi TKP</span
+                    >
+                    <span class="text-brand-500 flex items-center gap-1"
+                      >Lihat Kasus <i class="ph-bold ph-arrow-right"></i
+                    ></span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ================= VIEW 3: TAMBAH MODUL FORM ================= -->
+        <div id="view-modul-add" class="view-section mt-2">
+          <div
+            class="mb-8 flex flex-col md:flex-row md:items-start justify-between gap-4 pr-48"
+          >
+            <div>
+              <button
+                onclick="switchView('view-modul-list')"
+                class="text-sm font-bold text-slate-400 hover:text-brand-500 flex items-center gap-1 mb-4 transition-colors"
+              >
+                <i class="ph-bold ph-arrow-left"></i> Kembali
+              </button>
+              <h2 class="text-3xl font-bold text-slate-900">
+                Tambah Modul Baru
+              </h2>
+              <p class="text-slate-500 font-medium">
+                Unggah materi pembelajaran untuk referensi mahasiswa.
+              </p>
+            </div>
+            <div class="flex gap-2">
+              <button
+                onclick="switchView('view-modul-list')"
+                class="px-6 py-2.5 bg-slate-900 text-white rounded-xl font-bold hover:bg-slate-800 transition-colors shadow-lg"
+              >
+                Simpan Modul
+              </button>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 max-w-6xl">
+            <!-- Left Col: Form & LO -->
+            <div class="lg:col-span-2 space-y-8">
+              <!-- Informasi Dasar -->
+              <div class="bg-white border border-slate-200 rounded-3xl p-8">
+                <h3 class="font-bold text-slate-900 mb-6 text-xl">
+                  Informasi Dasar
+                </h3>
+                <div class="space-y-5">
+                  <div>
+                    <label class="block text-sm font-bold text-slate-700 mb-2"
+                      >Judul Modul</label
+                    >
+                    <input
+                      type="text"
+                      placeholder="Masukkan judul..."
+                      class="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm font-medium focus:outline-none focus:border-brand-500"
+                    />
+                  </div>
+                  <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                    <div>
+                      <label class="block text-sm font-bold text-slate-700 mb-2"
+                        >Kategori</label
+                      >
+                      <select
+                        class="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm font-medium focus:outline-none focus:border-brand-500 cursor-pointer bg-white appearance-none"
+                      >
+                        <option>Dasar Investigasi</option>
+                        <option>TKP</option>
+                        <option>Barang Bukti</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label class="block text-sm font-bold text-slate-700 mb-2"
+                        >Jenis Materi</label
+                      >
+                      <select
+                        class="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm font-medium focus:outline-none focus:border-brand-500 cursor-pointer bg-white appearance-none"
+                      >
+                        <option>Video</option>
+                        <option>PDF</option>
+                        <option>Artikel</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label class="block text-sm font-bold text-slate-700 mb-2"
+                        >Durasi (Menit)</label
+                      >
+                      <input
+                        type="number"
+                        placeholder="Misal: 15"
+                        class="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm font-medium focus:outline-none focus:border-brand-500"
+                      />
+                    </div>
+                    <div>
+                      <label class="block text-sm font-bold text-slate-700 mb-2"
+                        >Tingkat Kesulitan</label
+                      >
+                      <select
+                        class="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm font-medium focus:outline-none focus:border-brand-500 cursor-pointer bg-white appearance-none"
+                      >
+                        <option>Basic</option>
+                        <option>Intermediate</option>
+                        <option>Advanced</option>
+                      </select>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Learning Outcome -->
+              <div class="bg-white border border-slate-200 rounded-3xl p-8">
+                <h3 class="font-bold text-slate-900 mb-2 text-xl">
+                  Learning Outcome
+                </h3>
+                <p class="text-sm font-medium text-slate-500 mb-6">
+                  Pilih kompetensi yang diharapkan setelah mahasiswa mempelajari
+                  modul ini.
+                </p>
+
+                <div class="space-y-3">
+                  <label
+                    class="flex items-center gap-3 cursor-pointer p-3 border border-slate-200 rounded-xl hover:bg-slate-50"
+                  >
+                    <input
+                      type="checkbox"
+                      class="w-5 h-5 rounded border-slate-300 text-brand-500 focus:ring-brand-500"
+                      checked
+                    />
+                    <span class="font-bold text-slate-700 text-sm"
+                      >Mengidentifikasi barang bukti fisik dan digital</span
+                    >
+                  </label>
+                  <label
+                    class="flex items-center gap-3 cursor-pointer p-3 border border-slate-200 rounded-xl hover:bg-slate-50"
+                  >
+                    <input
+                      type="checkbox"
+                      class="w-5 h-5 rounded border-slate-300 text-brand-500 focus:ring-brand-500"
+                      checked
+                    />
+                    <span class="font-bold text-slate-700 text-sm"
+                      >Menentukan prosedur Chain of Custody yang tepat</span
+                    >
+                  </label>
+                  <label
+                    class="flex items-center gap-3 cursor-pointer p-3 border border-slate-200 rounded-xl hover:bg-slate-50"
+                  >
+                    <input
+                      type="checkbox"
+                      class="w-5 h-5 rounded border-slate-300 text-brand-500 focus:ring-brand-500"
+                    />
+                    <span class="font-bold text-slate-700 text-sm"
+                      >Menjelaskan proses investigasi lanjutan</span
+                    >
+                  </label>
+                  <button
+                    class="text-sm font-bold text-brand-500 flex items-center gap-1 mt-2"
+                  >
+                    <i class="ph-bold ph-plus"></i> Tambah Objektif Kustom
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Right Col: Uploads -->
+            <div class="space-y-6">
+              <div class="bg-white border border-slate-200 rounded-3xl p-6">
+                <h3 class="font-bold text-slate-900 mb-4 text-lg">
+                  Upload File Materi
+                </h3>
+
+                <div
+                  class="border-2 border-dashed border-slate-300 rounded-2xl p-8 text-center hover:border-brand-500 hover:bg-brand-50 transition-colors cursor-pointer group mb-4"
+                >
+                  <div
+                    class="w-16 h-16 bg-slate-100 text-slate-400 group-hover:bg-brand-100 group-hover:text-brand-500 rounded-full flex items-center justify-center text-3xl mx-auto mb-4 transition-colors"
+                  >
+                    <i class="ph-fill ph-upload-simple"></i>
+                  </div>
+                  <div class="font-bold text-slate-700 mb-1">
+                    Pilih atau Tarik File Video/PDF
+                  </div>
+                  <div class="text-xs font-medium text-slate-400">
+                    Maksimal ukuran file: 50MB
+                  </div>
+                </div>
+
+                <div
+                  class="border-2 border-dashed border-slate-300 rounded-2xl p-6 text-center hover:border-brand-500 hover:bg-brand-50 transition-colors cursor-pointer group"
+                >
+                  <div
+                    class="w-12 h-12 bg-slate-100 text-slate-400 group-hover:bg-brand-100 group-hover:text-brand-500 rounded-full flex items-center justify-center text-xl mx-auto mb-3 transition-colors"
+                  >
+                    <i class="ph-fill ph-image"></i>
+                  </div>
+                  <div class="font-bold text-slate-700 text-sm mb-1">
+                    Upload Thumbnail (Opsional)
+                  </div>
+                  <div class="text-[10px] font-medium text-slate-400">
+                    Rekomendasi 16:9, JPG/PNG
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <script>
+      // Simple View Router Logic
+      function switchView(viewId) {
+        document
+          .querySelectorAll(".view-section")
+          .forEach((el) => el.classList.remove("active"));
+        document.getElementById(viewId).classList.add("active");
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      }
+
+      function openModulDetail() {
+        switchView("view-modul-detail");
+        switchTab("info");
+      }
+
+      // Tab Logic for Detail View
+      function switchTab(tabId) {
+        // Hide all contents
+        document
+          .querySelectorAll(".tab-content")
+          .forEach((el) => el.classList.remove("active"));
+        // Reset all buttons
+        document.querySelectorAll(".modul-tab-btn").forEach((el) => {
+          el.classList.remove("text-brand-500", "border-brand-500");
+          el.classList.add("text-slate-400", "border-transparent");
+        });
+
+        // Show selected content
+        document.getElementById("tab-" + tabId).classList.add("active");
+        // Highlight selected button
+        const btn = document.getElementById("tab-btn-" + tabId);
+        if (btn) {
+          btn.classList.remove("text-slate-400", "border-transparent");
+          btn.classList.add("text-brand-500", "border-brand-500");
+        }
+      }
+    </script>
+  </body>
+</html>

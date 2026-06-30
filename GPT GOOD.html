@@ -1,0 +1,1052 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>VeritasLab - Student Workspace</title>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/@phosphor-icons/web"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: { sans: ['"Plus Jakarta Sans"', 'sans-serif'] },
+          colors: {
+            brand: {
+              50: "#FFF1F1",
+              100: "#FFE1E1",
+              500: "#D62828",
+              600: "#B92020",
+              700: "#9B1919"
+            }
+          }
+        }
+      }
+    };
+  </script>
+
+  <style>
+    body { background: #D62828; }
+    .page-section { display: none; }
+    .page-section.active { display: block; animation: fadeIn .25s ease; }
+    .case-step { display: none; }
+    .case-step.active { display: block; animation: fadeIn .25s ease; }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .custom-scroll::-webkit-scrollbar { width: 6px; }
+    .custom-scroll::-webkit-scrollbar-track { background: transparent; }
+    .custom-scroll::-webkit-scrollbar-thumb { background: #E2E8F0; border-radius: 999px; }
+    .custom-scroll::-webkit-scrollbar-thumb:hover { background: #CBD5E1; }
+
+    .marker-pulse {
+      box-shadow: 0 0 0 0 rgba(214, 40, 40, .7);
+      animation: pulseMarker 2s infinite;
+    }
+    @keyframes pulseMarker {
+      0% { box-shadow: 0 0 0 0 rgba(214, 40, 40, .7); }
+      70% { box-shadow: 0 0 0 12px rgba(214, 40, 40, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(214, 40, 40, 0); }
+    }
+  </style>
+</head>
+
+<body class="h-screen w-screen overflow-hidden flex p-4 gap-4 text-slate-800 font-sans antialiased">
+
+  <!-- SIDEBAR UTAMA -->
+  <aside class="w-[270px] shrink-0 flex flex-col justify-between text-white pb-2 pt-4">
+    <div>
+      <div class="flex items-center gap-3 mb-10 px-2 cursor-pointer hover:bg-white/10 p-2 rounded-xl transition">
+        <img
+          src="https://ui-avatars.com/api/?name=Ahmad+S&background=fff&color=d62828"
+          alt="Ahmad S."
+          class="w-12 h-12 rounded-xl shadow-sm"
+        />
+        <div>
+          <div class="font-bold text-lg leading-tight">Ahmad S.</div>
+          <div class="text-[11px] text-white/80 font-bold tracking-wide mt-0.5 bg-white/10 px-2 py-0.5 rounded w-fit">
+            240101992
+          </div>
+        </div>
+      </div>
+
+      <nav class="space-y-2">
+        <button data-page="dashboard" class="main-nav active w-full text-left px-5 py-3.5 rounded-xl bg-white/20 font-bold transition flex items-center gap-3">
+          <i class="ph-bold ph-squares-four text-lg"></i> Dashboard
+        </button>
+        <button data-page="cases" class="main-nav w-full text-left px-5 py-3.5 rounded-xl hover:bg-white/10 font-medium transition flex items-center gap-3">
+          <i class="ph-bold ph-folder-open text-lg"></i> Kasus Saya
+        </button>
+        <button data-page="modules" class="main-nav w-full text-left px-5 py-3.5 rounded-xl hover:bg-white/10 font-medium transition flex items-center gap-3">
+          <i class="ph-bold ph-books text-lg"></i> Modul Belajar
+        </button>
+        <button data-page="profile" class="main-nav w-full text-left px-5 py-3.5 rounded-xl hover:bg-white/10 font-medium transition flex items-center gap-3">
+          <i class="ph-bold ph-user text-lg"></i> Profil
+        </button>
+      </nav>
+    </div>
+
+    <div class="px-4 text-center text-xs font-bold text-white/50">
+      VeritasLab Student v1.0
+    </div>
+  </aside>
+
+  <!-- MAIN WRAPPER -->
+  <main class="flex-1 bg-white rounded-[2rem] overflow-hidden shadow-2xl flex flex-col relative">
+
+    <!-- HEADER GLOBAL -->
+    <header class="px-8 pt-7 pb-5 border-b border-slate-100 shrink-0 flex items-center justify-between">
+      <div>
+        <div class="flex items-center gap-2 text-xl font-extrabold text-slate-900 mb-1">
+          <i class="ph-fill ph-fingerprint text-brand-500 text-2xl"></i>
+          Veritas<span class="text-brand-500 -ml-1">Lab</span>
+        </div>
+        <p id="page-subtitle" class="text-sm text-slate-500 font-medium">
+          Ringkasan aktivitas pembelajaran dan investigasi Anda.
+        </p>
+      </div>
+
+      <div class="flex items-center gap-3">
+        <button class="w-10 h-10 rounded-xl border border-slate-200 flex items-center justify-center text-slate-500 hover:bg-slate-50">
+          <i class="ph-bold ph-bell"></i>
+        </button>
+        <button class="px-4 py-2 rounded-xl bg-brand-500 text-white text-sm font-bold hover:bg-brand-600">
+          Bantuan
+        </button>
+      </div>
+    </header>
+
+    <!-- CONTENT AREA -->
+    <div class="flex-1 overflow-hidden">
+
+      <!-- PAGE: DASHBOARD -->
+      <section id="page-dashboard" class="page-section active h-full overflow-y-auto custom-scroll p-8">
+        <div class="mb-8">
+          <h1 class="text-3xl font-extrabold text-slate-900 mb-2">Dashboard Mahasiswa</h1>
+          <p class="text-slate-500 font-medium">Pantau progres kasus, modul belajar, dan hasil evaluasi Anda.</p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-5 mb-8">
+          <div class="bg-brand-50 border border-brand-100 rounded-2xl p-6">
+            <div class="w-11 h-11 rounded-xl bg-brand-500 text-white flex items-center justify-center text-xl mb-4">
+              <i class="ph-fill ph-folder-open"></i>
+            </div>
+            <p class="text-sm font-bold text-brand-700">Kasus Aktif</p>
+            <h2 class="text-3xl font-extrabold text-slate-900 mt-1">1</h2>
+          </div>
+
+          <div class="bg-slate-50 border border-slate-200 rounded-2xl p-6">
+            <div class="w-11 h-11 rounded-xl bg-slate-900 text-white flex items-center justify-center text-xl mb-4">
+              <i class="ph-fill ph-books"></i>
+            </div>
+            <p class="text-sm font-bold text-slate-600">Modul Direkomendasikan</p>
+            <h2 class="text-3xl font-extrabold text-slate-900 mt-1">3</h2>
+          </div>
+
+          <div class="bg-emerald-50 border border-emerald-100 rounded-2xl p-6">
+            <div class="w-11 h-11 rounded-xl bg-emerald-500 text-white flex items-center justify-center text-xl mb-4">
+              <i class="ph-fill ph-chart-line-up"></i>
+            </div>
+            <p class="text-sm font-bold text-emerald-700">Rata-rata Nilai</p>
+            <h2 class="text-3xl font-extrabold text-slate-900 mt-1">88</h2>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 xl:grid-cols-2 gap-6">
+          <div class="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
+            <div class="flex items-center justify-between mb-5">
+              <h3 class="font-extrabold text-slate-900">Kasus Terbaru</h3>
+              <button onclick="showPage('cases')" class="text-xs font-bold text-brand-500 hover:text-brand-700">Lihat Kasus</button>
+            </div>
+
+            <div class="border border-slate-200 rounded-2xl p-5">
+              <div class="flex items-start justify-between gap-4 mb-4">
+                <div>
+                  <h4 class="font-bold text-slate-900">Investigasi Pencurian Laptop di Ruang Kelas</h4>
+                  <p class="text-sm text-slate-500 mt-1">Investigasi TKP • Intermediate • ±90 menit</p>
+                </div>
+                <span class="bg-amber-100 text-amber-700 text-xs font-extrabold px-2.5 py-1 rounded-lg">Aktif</span>
+              </div>
+
+              <div class="mb-4">
+                <div class="flex justify-between text-xs font-bold mb-1">
+                  <span class="text-slate-500">Progress</span>
+                  <span class="text-brand-500" id="dashboard-progress-text">15%</span>
+                </div>
+                <div class="h-2 bg-slate-100 rounded-full overflow-hidden">
+                  <div id="dashboard-progress-bar" class="h-full bg-brand-500 rounded-full" style="width: 15%"></div>
+                </div>
+              </div>
+
+              <button onclick="showPage('cases')" class="w-full py-3 rounded-xl bg-slate-900 text-white font-bold hover:bg-slate-800">
+                Lanjutkan Kasus
+              </button>
+            </div>
+          </div>
+
+          <div class="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
+            <h3 class="font-extrabold text-slate-900 mb-5">Learning Outcome Aktif</h3>
+            <ul class="space-y-3 text-sm font-medium text-slate-700">
+              <li class="flex items-start gap-3">
+                <i class="ph-bold ph-check-circle text-emerald-500 mt-0.5"></i>
+                Mengidentifikasi dan mengamankan barang bukti di TKP.
+              </li>
+              <li class="flex items-start gap-3">
+                <i class="ph-bold ph-check-circle text-emerald-500 mt-0.5"></i>
+                Menganalisis kronologi berdasarkan alibi dan bukti fisik.
+              </li>
+              <li class="flex items-start gap-3">
+                <i class="ph-bold ph-check-circle text-emerald-500 mt-0.5"></i>
+                Menyusun hipotesis logis mengenai pelaku.
+              </li>
+              <li class="flex items-start gap-3">
+                <i class="ph-bold ph-check-circle text-emerald-500 mt-0.5"></i>
+                Menyusun laporan investigasi kriminal yang terstruktur.
+              </li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <!-- PAGE: KASUS SAYA -->
+      <section id="page-cases" class="page-section h-full overflow-hidden">
+        <div class="h-full flex">
+
+          <!-- SUB NAVIGATION KASUS -->
+          <aside class="w-72 shrink-0 border-r border-slate-100 p-6 overflow-y-auto custom-scroll">
+            <div class="mb-6">
+              <h2 class="text-xl font-extrabold text-slate-900">Kasus Saya</h2>
+              <p class="text-xs text-slate-500 font-medium mt-1">Pilih tahap investigasi sesuai alur pengerjaan.</p>
+            </div>
+
+            <div class="bg-slate-50 border border-slate-200 rounded-2xl p-4 mb-6">
+              <div class="text-xs font-bold text-slate-400 uppercase mb-2">Kasus Aktif</div>
+              <h3 class="font-bold text-sm text-slate-900 leading-snug">Pencurian Laptop di Ruang Kelas</h3>
+              <div class="mt-3 flex flex-wrap gap-2 text-[10px] font-extrabold">
+                <span class="bg-amber-100 text-amber-700 px-2 py-1 rounded">Aktif</span>
+                <span class="bg-slate-200 text-slate-600 px-2 py-1 rounded">Intermediate</span>
+              </div>
+            </div>
+
+            <div class="text-xs font-extrabold text-slate-400 uppercase tracking-wider mb-3">
+              Tahapan Investigasi
+            </div>
+
+            <nav class="space-y-2">
+              <button onclick="switchCaseStep(1)" id="step-nav-1" class="case-nav active w-full text-left px-4 py-3 rounded-xl font-bold text-sm bg-brand-50 text-brand-600 border border-brand-200 flex items-center gap-3">
+                <span class="w-7 h-7 rounded-full bg-white flex items-center justify-center text-xs shadow-sm">1</span>
+                Brief Kasus
+              </button>
+              <button onclick="switchCaseStep(2)" id="step-nav-2" class="case-nav w-full text-left px-4 py-3 rounded-xl font-bold text-sm text-slate-500 hover:bg-slate-50 border border-transparent flex items-center gap-3">
+                <span class="w-7 h-7 rounded-full bg-slate-100 flex items-center justify-center text-xs">2</span>
+                Modul Pendukung
+              </button>
+              <button onclick="switchCaseStep(3)" id="step-nav-3" class="case-nav w-full text-left px-4 py-3 rounded-xl font-bold text-sm text-slate-500 hover:bg-slate-50 border border-transparent flex items-center gap-3">
+                <span class="w-7 h-7 rounded-full bg-slate-100 flex items-center justify-center text-xs">3</span>
+                Olah TKP
+              </button>
+              <button onclick="switchCaseStep(4)" id="step-nav-4" class="case-nav w-full text-left px-4 py-3 rounded-xl font-bold text-sm text-slate-500 hover:bg-slate-50 border border-transparent flex items-center gap-3">
+                <span class="w-7 h-7 rounded-full bg-slate-100 flex items-center justify-center text-xs">4</span>
+                Analisis
+              </button>
+              <button onclick="switchCaseStep(5)" id="step-nav-5" class="case-nav w-full text-left px-4 py-3 rounded-xl font-bold text-sm text-slate-500 hover:bg-slate-50 border border-transparent flex items-center gap-3">
+                <span class="w-7 h-7 rounded-full bg-slate-100 flex items-center justify-center text-xs">5</span>
+                Laporan
+              </button>
+              <button onclick="switchCaseStep(6)" id="step-nav-6" class="case-nav w-full text-left px-4 py-3 rounded-xl font-bold text-sm text-slate-500 hover:bg-slate-50 border border-transparent flex items-center gap-3">
+                <span class="w-7 h-7 rounded-full bg-slate-100 flex items-center justify-center text-xs">
+                  <i class="ph-bold ph-paper-plane-right"></i>
+                </span>
+                Submit
+              </button>
+            </nav>
+          </aside>
+
+          <!-- KONTEN KASUS -->
+          <div class="flex-1 flex flex-col min-w-0">
+
+            <!-- CASE HEADER -->
+            <header class="px-8 py-6 border-b border-slate-100 shrink-0">
+              <div class="flex flex-col xl:flex-row xl:items-start xl:justify-between gap-4 mb-5">
+                <div>
+                  <button onclick="showPage('dashboard')" class="text-xs font-bold text-slate-400 hover:text-brand-500 flex items-center gap-1 mb-3">
+                    <i class="ph-bold ph-arrow-left"></i> Kembali ke Dashboard
+                  </button>
+                  <h1 class="text-2xl font-extrabold text-slate-900 mb-3">Investigasi Pencurian Laptop di Ruang Kelas</h1>
+                  <div class="flex flex-wrap items-center gap-3 text-xs font-bold">
+                    <span id="case-status-badge" class="bg-amber-100 text-amber-700 px-2.5 py-1 rounded-md uppercase tracking-wide flex items-center gap-1">
+                      <i class="ph-fill ph-spinner-gap"></i> Sedang Dikerjakan
+                    </span>
+                    <span class="text-slate-500 flex items-center gap-1"><i class="ph-fill ph-clock"></i> Deadline: 20 Juli 2026</span>
+                    <span class="text-slate-500 flex items-center gap-1"><i class="ph-fill ph-hourglass-high"></i> ±90 Menit</span>
+                    <span class="text-slate-500 flex items-center gap-1"><i class="ph-fill ph-chart-bar"></i> Intermediate</span>
+                  </div>
+                </div>
+
+                <div class="flex items-center gap-3 shrink-0">
+                  <button class="px-5 py-2.5 rounded-xl border border-slate-200 text-slate-600 font-bold hover:bg-slate-50 text-sm">
+                    Simpan Draft
+                  </button>
+                  <button onclick="switchCaseStep(6)" class="px-5 py-2.5 rounded-xl bg-brand-500 text-white font-bold hover:bg-brand-600 text-sm shadow-md">
+                    Submit Jawaban
+                  </button>
+                </div>
+              </div>
+
+              <div class="flex items-center gap-4">
+                <div class="flex-1 bg-slate-100 rounded-full h-2 overflow-hidden">
+                  <div id="global-progress-bar" class="bg-brand-500 h-full rounded-full transition-all duration-500" style="width: 15%"></div>
+                </div>
+                <span id="global-progress-text" class="text-xs font-bold text-slate-500">15% Selesai</span>
+              </div>
+            </header>
+
+            <!-- CASE BODY -->
+            <div class="flex-1 flex min-h-0 p-6 gap-6 overflow-hidden">
+
+              <!-- CENTER STEP CONTENT -->
+              <div class="flex-1 overflow-y-auto custom-scroll bg-slate-50/60 rounded-3xl border border-slate-100 p-8">
+
+                <!-- STEP 1 -->
+                <div id="case-step-1" class="case-step active max-w-3xl mx-auto">
+                  <div class="flex items-center gap-3 mb-6">
+                    <div class="w-10 h-10 rounded-xl bg-brand-100 text-brand-600 flex items-center justify-center text-xl">
+                      <i class="ph-fill ph-info"></i>
+                    </div>
+                    <h2 class="text-2xl font-extrabold text-slate-900">Brief Kasus</h2>
+                  </div>
+
+                  <div class="bg-white border border-slate-200 p-6 rounded-2xl mb-6 shadow-sm">
+                    <h3 class="font-bold text-slate-900 mb-2">Deskripsi Kejadian</h3>
+                    <p class="text-slate-600 text-sm leading-relaxed">
+                      Pada pukul 10.15 WIB, seorang mahasiswa melaporkan kehilangan laptop merek ASUS di Ruang Kelas 302 setelah kegiatan perkuliahan selesai. Ruangan sempat kosong selama 15 menit saat jam istirahat. Anda ditugaskan sebagai penyidik utama untuk melakukan olah TKP digital dan menemukan pelaku berdasarkan bukti yang tersedia.
+                    </p>
+                  </div>
+
+                  <div class="bg-white border border-slate-200 p-6 rounded-2xl mb-8 shadow-sm">
+                    <h3 class="font-bold text-slate-900 mb-4">Learning Outcome</h3>
+                    <p class="text-sm text-slate-500 mb-3">Setelah menyelesaikan studi kasus ini, mahasiswa diharapkan mampu:</p>
+                    <ul class="space-y-2 text-sm font-medium text-slate-700">
+                      <li class="flex items-start gap-2"><i class="ph-bold ph-check text-emerald-500 mt-0.5"></i> Mengidentifikasi dan mengamankan barang bukti di TKP.</li>
+                      <li class="flex items-start gap-2"><i class="ph-bold ph-check text-emerald-500 mt-0.5"></i> Menganalisis kronologi berdasarkan alibi dan bukti fisik.</li>
+                      <li class="flex items-start gap-2"><i class="ph-bold ph-check text-emerald-500 mt-0.5"></i> Menyusun hipotesis logis mengenai pelaku.</li>
+                      <li class="flex items-start gap-2"><i class="ph-bold ph-check text-emerald-500 mt-0.5"></i> Menyusun laporan investigasi kriminal yang terstruktur.</li>
+                    </ul>
+                  </div>
+
+                  <button onclick="switchCaseStep(2)" class="px-6 py-3 rounded-xl bg-slate-900 text-white font-bold hover:bg-slate-800 flex items-center gap-2">
+                    Lanjut ke Modul <i class="ph-bold ph-arrow-right"></i>
+                  </button>
+                </div>
+
+                <!-- STEP 2 -->
+                <div id="case-step-2" class="case-step max-w-3xl mx-auto">
+                  <div class="flex items-center gap-3 mb-6">
+                    <div class="w-10 h-10 rounded-xl bg-blue-100 text-blue-600 flex items-center justify-center text-xl">
+                      <i class="ph-fill ph-books"></i>
+                    </div>
+                    <div>
+                      <h2 class="text-2xl font-extrabold text-slate-900">Modul Pendukung Kasus</h2>
+                      <p class="text-sm text-slate-500 mt-1">Materi pendukung sebelum observasi TKP.</p>
+                    </div>
+                  </div>
+
+                  <div class="space-y-4">
+                    <article class="bg-white border border-slate-200 p-5 rounded-2xl flex items-center justify-between shadow-sm hover:border-brand-300 transition">
+                      <div class="flex items-center gap-4">
+                        <div class="w-12 h-12 bg-slate-100 text-slate-600 rounded-xl flex items-center justify-center text-xl">
+                          <i class="ph-fill ph-video-camera"></i>
+                        </div>
+                        <div>
+                          <h4 class="font-bold text-slate-900">Dasar Investigasi TKP</h4>
+                          <p class="text-xs text-slate-500 font-medium mt-0.5">Video Pembelajaran • 15 Menit</p>
+                        </div>
+                      </div>
+                      <button class="px-4 py-2 bg-slate-50 text-slate-700 text-xs font-bold rounded-lg hover:bg-slate-200">Tonton</button>
+                    </article>
+
+                    <article class="bg-white border border-slate-200 p-5 rounded-2xl flex items-center justify-between shadow-sm hover:border-brand-300 transition">
+                      <div class="flex items-center gap-4">
+                        <div class="w-12 h-12 bg-slate-100 text-slate-600 rounded-xl flex items-center justify-center text-xl">
+                          <i class="ph-fill ph-article"></i>
+                        </div>
+                        <div>
+                          <h4 class="font-bold text-slate-900">Chain of Custody</h4>
+                          <p class="text-xs text-slate-500 font-medium mt-0.5">Artikel Panduan • 10 Menit</p>
+                        </div>
+                      </div>
+                      <button class="px-4 py-2 bg-slate-50 text-slate-700 text-xs font-bold rounded-lg hover:bg-slate-200">Baca</button>
+                    </article>
+
+                    <article class="bg-white border border-slate-200 p-5 rounded-2xl flex items-center justify-between shadow-sm hover:border-brand-300 transition">
+                      <div class="flex items-center gap-4">
+                        <div class="w-12 h-12 bg-slate-100 text-slate-600 rounded-xl flex items-center justify-center text-xl">
+                          <i class="ph-fill ph-file-pdf"></i>
+                        </div>
+                        <div>
+                          <h4 class="font-bold text-slate-900">Teknik Identifikasi Barang Bukti</h4>
+                          <p class="text-xs text-slate-500 font-medium mt-0.5">Dokumen PDF • 25 Menit</p>
+                        </div>
+                      </div>
+                      <button class="px-4 py-2 bg-slate-50 text-slate-700 text-xs font-bold rounded-lg hover:bg-slate-200">Buka PDF</button>
+                    </article>
+                  </div>
+
+                  <div class="mt-8 pt-6 border-t border-slate-200 flex justify-between">
+                    <button onclick="switchCaseStep(1)" class="px-5 py-3 rounded-xl border border-slate-200 text-slate-600 font-bold hover:bg-slate-50">
+                      Kembali
+                    </button>
+                    <button onclick="switchCaseStep(3)" class="px-6 py-3 rounded-xl bg-slate-900 text-white font-bold hover:bg-slate-800 flex items-center gap-2">
+                      Ke Olah TKP <i class="ph-bold ph-arrow-right"></i>
+                    </button>
+                  </div>
+                </div>
+
+                <!-- STEP 3 -->
+                <div id="case-step-3" class="case-step h-full">
+                  <div class="flex items-center justify-between mb-4">
+                    <div class="flex items-center gap-3">
+                      <div class="w-10 h-10 rounded-xl bg-emerald-100 text-emerald-600 flex items-center justify-center text-xl">
+                        <i class="ph-fill ph-magnifying-glass"></i>
+                      </div>
+                      <div>
+                        <h2 class="text-2xl font-extrabold text-slate-900">Olah TKP</h2>
+                        <p class="text-sm text-slate-500">Klik marker pada ruangan untuk menginspeksi barang bukti.</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="bg-slate-900 rounded-3xl relative overflow-hidden border border-slate-300 shadow-inner min-h-[430px]">
+                    <img
+                      src="https://images.unsplash.com/photo-1577412647305-991150c7d163?auto=format&fit=crop&q=80&w=1600"
+                      alt="Ruang Kelas 302"
+                      class="w-full h-full object-cover opacity-80 absolute inset-0"
+                    />
+
+                    <div class="absolute top-4 left-4 bg-black/60 text-white px-3 py-1.5 rounded-lg backdrop-blur text-xs font-bold flex items-center gap-2">
+                      <i class="ph-fill ph-scan"></i> Ruang Kelas 302
+                    </div>
+
+                    <button onclick="openEvidenceModal('Laptop Box', 'Meja', 'Ditemukan kotak laptop kosong. Sidik jari parsial terdeteksi di ujung kotak.')" class="absolute top-[55%] left-[25%] marker-pulse w-8 h-8 bg-brand-500 border-2 border-white text-white rounded-full flex items-center justify-center font-bold text-xs hover:scale-110 transition">1</button>
+                    <button onclick="openEvidenceModal('Tas Mahasiswa', 'Lantai', 'Tas punggung terbuka sebagian. Ada nota minimarket dengan timestamp 10:10 WIB.')" class="absolute top-[65%] left-[45%] marker-pulse w-8 h-8 bg-brand-500 border-2 border-white text-white rounded-full flex items-center justify-center font-bold text-xs hover:scale-110 transition">2</button>
+                    <button onclick="openEvidenceModal('Rekaman CCTV', 'Koridor Luar', 'CCTV menyorot pintu kelas. Ada blind spot selama 3 menit tepat pada pukul 10:17 WIB.')" class="absolute top-[20%] right-[15%] marker-pulse w-8 h-8 bg-brand-500 border-2 border-white text-white rounded-full flex items-center justify-center font-bold text-xs hover:scale-110 transition">3</button>
+                    <button onclick="openEvidenceModal('Flashdisk', 'Dekat Pintu', 'Flashdisk 16GB. Log data terakhir menunjukkan akses ke jaringan WiFi kampus pada pukul 10:14 WIB.')" class="absolute bottom-[20%] left-[10%] marker-pulse w-8 h-8 bg-brand-500 border-2 border-white text-white rounded-full flex items-center justify-center font-bold text-xs hover:scale-110 transition">4</button>
+                  </div>
+
+                  <div class="mt-6 flex justify-between">
+                    <button onclick="switchCaseStep(2)" class="px-5 py-3 rounded-xl border border-slate-200 text-slate-600 font-bold hover:bg-white">
+                      Kembali
+                    </button>
+                    <button onclick="switchCaseStep(4)" class="px-6 py-3 rounded-xl bg-slate-900 text-white font-bold hover:bg-slate-800 flex items-center gap-2">
+                      Lanjut Analisis <i class="ph-bold ph-arrow-right"></i>
+                    </button>
+                  </div>
+                </div>
+
+                <!-- STEP 4 -->
+                <div id="case-step-4" class="case-step max-w-3xl mx-auto">
+                  <div class="flex items-center gap-3 mb-6">
+                    <div class="w-10 h-10 rounded-xl bg-purple-100 text-purple-600 flex items-center justify-center text-xl">
+                      <i class="ph-fill ph-brain"></i>
+                    </div>
+                    <h2 class="text-2xl font-extrabold text-slate-900">Analisis Kasus</h2>
+                  </div>
+
+                  <div class="space-y-6">
+                    <div class="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
+                      <label class="block text-sm font-bold text-slate-800 mb-2">1. Analisis Kronologi Kejadian</label>
+                      <p class="text-xs text-slate-500 mb-3">Susun urutan waktu berdasarkan bukti yang Anda temukan.</p>
+                      <textarea rows="4" class="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm font-medium focus:outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500 resize-none bg-slate-50" placeholder="Ketik kronologi menurut analisis Anda..."></textarea>
+                    </div>
+
+                    <div class="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
+                      <label class="block text-sm font-bold text-slate-800 mb-2">2. Dugaan Tersangka Utama</label>
+                      <select class="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm font-medium focus:outline-none focus:border-brand-500 cursor-pointer bg-slate-50">
+                        <option value="">Pilih Tersangka...</option>
+                        <option>Mahasiswa B</option>
+                        <option>Petugas Kebersihan</option>
+                        <option>Orang Luar</option>
+                        <option>Belum Dapat Disimpulkan</option>
+                      </select>
+                    </div>
+
+                    <div class="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
+                      <label class="block text-sm font-bold text-slate-800 mb-2">3. Hipotesis & Alasan</label>
+                      <p class="text-xs text-slate-500 mb-3">Hubungkan dugaan dengan barang bukti.</p>
+                      <textarea rows="4" class="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm font-medium focus:outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500 resize-none bg-slate-50" placeholder="Tulis alasan hipotesis..."></textarea>
+                    </div>
+                  </div>
+
+                  <div class="mt-8 flex justify-between">
+                    <button onclick="switchCaseStep(3)" class="px-5 py-3 rounded-xl border border-slate-200 text-slate-600 font-bold hover:bg-white">
+                      Kembali
+                    </button>
+                    <button onclick="switchCaseStep(5)" class="px-6 py-3 rounded-xl bg-slate-900 text-white font-bold hover:bg-slate-800 flex items-center gap-2">
+                      Susun Laporan <i class="ph-bold ph-arrow-right"></i>
+                    </button>
+                  </div>
+                </div>
+
+                <!-- STEP 5 -->
+                <div id="case-step-5" class="case-step max-w-4xl mx-auto">
+                  <div class="flex items-center gap-3 mb-6">
+                    <div class="w-10 h-10 rounded-xl bg-amber-100 text-amber-600 flex items-center justify-center text-xl">
+                      <i class="ph-fill ph-file-text"></i>
+                    </div>
+                    <div>
+                      <h2 class="text-2xl font-extrabold text-slate-900">Laporan Akhir Investigasi</h2>
+                      <p class="text-sm text-slate-500 mt-1">Laporan ini akan dinilai oleh AI dan dosen pengampu.</p>
+                    </div>
+                  </div>
+
+                  <div class="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm mb-6">
+                    <h3 class="font-bold text-slate-800 mb-4 text-sm border-b border-slate-100 pb-2">A. Barang Bukti Utama</h3>
+                    <div id="report-evidence-list" class="space-y-2 mb-6">
+                      <div class="text-sm text-slate-500 italic">Kumpulkan bukti pada tahap Olah TKP agar muncul di sini.</div>
+                    </div>
+
+                    <h3 class="font-bold text-slate-800 mb-4 text-sm border-b border-slate-100 pb-2">B. Kesimpulan Laporan</h3>
+                    <div class="border border-slate-200 rounded-xl overflow-hidden">
+                      <div class="bg-slate-50 border-b border-slate-200 p-2 flex gap-2">
+                        <button class="w-8 h-8 rounded text-slate-600 flex items-center justify-center hover:bg-slate-200 font-bold" type="button">B</button>
+                        <button class="w-8 h-8 rounded text-slate-600 flex items-center justify-center hover:bg-slate-200 italic" type="button">I</button>
+                        <button class="w-8 h-8 rounded text-slate-600 flex items-center justify-center hover:bg-slate-200 underline" type="button">U</button>
+                      </div>
+                      <textarea rows="8" class="w-full p-4 text-sm font-medium focus:outline-none resize-none" placeholder="Tuliskan kesimpulan menyeluruh mulai dari motif, cara kejadian, hingga hasil investigasi..."></textarea>
+                    </div>
+                  </div>
+
+                  <div class="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm mb-8">
+                    <h3 class="font-bold text-slate-800 mb-2 text-sm">C. Lampiran Tambahan</h3>
+                    <div class="border-2 border-dashed border-slate-300 rounded-xl p-6 text-center hover:bg-slate-50 cursor-pointer">
+                      <i class="ph-bold ph-upload-simple text-2xl text-slate-400 mb-2"></i>
+                      <div class="text-sm font-bold text-slate-700">Upload File / Foto Pendukung</div>
+                      <div class="text-xs text-slate-400">PDF, JPG, PNG maks 10MB</div>
+                    </div>
+                  </div>
+
+                  <div class="flex justify-between items-center">
+                    <button onclick="switchCaseStep(4)" class="px-5 py-3 rounded-xl border border-slate-200 text-slate-600 font-bold hover:bg-white">
+                      Kembali
+                    </button>
+                    <button onclick="switchCaseStep(6)" class="px-6 py-3 rounded-xl bg-slate-900 text-white font-bold hover:bg-slate-800 flex items-center gap-2">
+                      Review & Submit <i class="ph-bold ph-arrow-right"></i>
+                    </button>
+                  </div>
+                </div>
+
+                <!-- STEP 6 -->
+                <div id="case-step-6" class="case-step max-w-2xl mx-auto text-center py-10">
+                  <div class="w-20 h-20 bg-brand-50 text-brand-500 rounded-full flex items-center justify-center text-4xl mx-auto mb-6">
+                    <i class="ph-fill ph-paper-plane-tilt"></i>
+                  </div>
+                  <h2 class="text-3xl font-extrabold text-slate-900 mb-4">Siap Submit Laporan?</h2>
+                  <p class="text-slate-600 font-medium mb-8">
+                    Setelah disubmit, laporan tidak dapat diubah lagi. AI VeritasLab akan langsung mengevaluasi hasil investigasi Anda.
+                  </p>
+
+                  <div class="bg-white border border-slate-200 rounded-2xl p-6 text-left shadow-sm mb-8">
+                    <h3 class="font-bold text-slate-800 border-b border-slate-100 pb-3 mb-4">Ringkasan Pengerjaan</h3>
+                    <div class="space-y-3">
+                      <div class="flex justify-between items-center text-sm">
+                        <span class="text-slate-500">Barang Bukti Terkumpul</span>
+                        <span id="summary-evidence-count" class="font-bold text-slate-900">0 Item</span>
+                      </div>
+                      <div class="flex justify-between items-center text-sm">
+                        <span class="text-slate-500">Analisis & Hipotesis</span>
+                        <span class="font-bold text-emerald-600"><i class="ph-bold ph-check"></i> Siap Dicek</span>
+                      </div>
+                      <div class="flex justify-between items-center text-sm">
+                        <span class="text-slate-500">Laporan Akhir</span>
+                        <span class="font-bold text-emerald-600"><i class="ph-bold ph-check"></i> Siap Dicek</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="flex gap-3">
+                    <button onclick="switchCaseStep(5)" class="flex-1 py-4 rounded-xl border border-slate-200 text-slate-600 font-bold hover:bg-white">
+                      Kembali
+                    </button>
+                    <button onclick="submitWorkspace()" class="flex-1 py-4 rounded-xl bg-brand-500 text-white font-bold text-lg hover:bg-brand-600 shadow-lg shadow-brand-500/30">
+                      Submit Sekarang
+                    </button>
+                  </div>
+                </div>
+
+                <!-- STEP 7 -->
+                <div id="case-step-7" class="case-step max-w-4xl mx-auto py-4">
+                  <div class="bg-emerald-50 border border-emerald-200 rounded-3xl p-8 mb-8 flex flex-col md:flex-row items-center justify-between gap-6">
+                    <div>
+                      <div class="text-sm font-bold text-emerald-700 uppercase tracking-wide mb-2">
+                        <i class="ph-fill ph-check-circle"></i> Evaluasi Selesai
+                      </div>
+                      <h2 class="text-2xl font-extrabold text-emerald-900 mb-1">Laporan Berhasil Disubmit</h2>
+                      <p class="text-emerald-800 text-sm font-medium">Laporan Anda telah dinilai oleh AI dan disetujui dosen.</p>
+                    </div>
+                    <div class="bg-white p-4 rounded-2xl shadow-sm text-center min-w-[120px]">
+                      <div class="text-xs font-bold text-slate-400 uppercase">Nilai Akhir</div>
+                      <div class="text-4xl font-extrabold text-slate-900">88</div>
+                    </div>
+                  </div>
+
+                  <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
+                      <h3 class="font-bold text-slate-900 mb-6 flex items-center gap-2">
+                        <i class="ph-fill ph-chart-polar text-brand-500"></i> Rincian Kompetensi
+                      </h3>
+
+                      <div class="space-y-4">
+                        <div>
+                          <div class="flex justify-between text-xs font-bold mb-1"><span class="text-slate-600">Evidence Assessment</span><span>90/100</span></div>
+                          <div class="w-full bg-slate-100 rounded-full h-1.5"><div class="bg-brand-500 h-1.5 rounded-full" style="width:90%"></div></div>
+                        </div>
+                        <div>
+                          <div class="flex justify-between text-xs font-bold mb-1"><span class="text-slate-600">Case Analysis</span><span>84/100</span></div>
+                          <div class="w-full bg-slate-100 rounded-full h-1.5"><div class="bg-brand-500 h-1.5 rounded-full" style="width:84%"></div></div>
+                        </div>
+                        <div>
+                          <div class="flex justify-between text-xs font-bold mb-1"><span class="text-slate-600">Hypothesis Development</span><span>86/100</span></div>
+                          <div class="w-full bg-slate-100 rounded-full h-1.5"><div class="bg-brand-500 h-1.5 rounded-full" style="width:86%"></div></div>
+                        </div>
+                        <div>
+                          <div class="flex justify-between text-xs font-bold mb-1"><span class="text-slate-600">Report Writing</span><span>88/100</span></div>
+                          <div class="w-full bg-slate-100 rounded-full h-1.5"><div class="bg-brand-500 h-1.5 rounded-full" style="width:88%"></div></div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div class="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
+                      <h3 class="font-bold text-slate-900 mb-4 flex items-center gap-2">
+                        <i class="ph-fill ph-chat-teardrop-text text-blue-500"></i> Feedback Evaluasi
+                      </h3>
+
+                      <div class="bg-slate-50 p-4 rounded-xl border border-slate-100 mb-4">
+                        <div class="text-xs font-bold text-slate-500 mb-2">AI Assessment</div>
+                        <p class="text-sm text-slate-700 font-medium">
+                          Analisis kronologi terkait blind spot CCTV sudah tepat. Pengamatan timestamp pada nota minimarket dapat diperdalam untuk memperkuat alibi.
+                        </p>
+                      </div>
+
+                      <div class="bg-blue-50 p-4 rounded-xl border border-blue-100">
+                        <div class="text-xs font-bold text-blue-500 mb-2">Catatan Dosen</div>
+                        <p class="text-sm text-blue-900 font-medium">
+                          Laporan sudah terstruktur. Perhatikan format penulisan resmi investigasi untuk tugas berikutnya.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- RIGHT INFO PANEL -->
+              <aside class="w-80 shrink-0 overflow-y-auto custom-scroll pr-2 space-y-6">
+
+                <div class="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm">
+                  <h3 class="font-bold text-slate-900 mb-4 text-sm border-b border-slate-100 pb-2">Informasi Kasus</h3>
+                  <div class="space-y-3">
+                    <div>
+                      <div class="text-[10px] font-bold text-slate-400 uppercase">Deadline</div>
+                      <div class="text-sm font-bold text-slate-700">20 Juli 2026, 23:59</div>
+                    </div>
+                    <div>
+                      <div class="text-[10px] font-bold text-slate-400 uppercase">Kategori</div>
+                      <div class="text-sm font-bold text-slate-700">Investigasi TKP</div>
+                    </div>
+                    <div>
+                      <div class="text-[10px] font-bold text-slate-400 uppercase">Dosen Pengampu</div>
+                      <div class="text-sm font-bold text-slate-700">Prof. Hendra</div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm min-h-[200px]">
+                  <div class="flex justify-between items-center mb-4 border-b border-slate-100 pb-2">
+                    <h3 class="font-bold text-slate-900 text-sm">Barang Bukti Dipilih</h3>
+                    <span id="evidence-counter" class="bg-brand-50 text-brand-600 text-[10px] font-extrabold px-2 py-0.5 rounded">0 Item</span>
+                  </div>
+                  <div id="collected-evidence" class="space-y-2">
+                    <div id="empty-evidence-msg" class="text-center text-xs text-slate-400 font-medium py-4">
+                      Belum ada bukti yang dikumpulkan dari TKP.
+                    </div>
+                  </div>
+                </div>
+
+                <div class="bg-slate-50 border border-slate-200 rounded-2xl p-5 shadow-sm">
+                  <h3 class="font-bold text-slate-900 mb-4 text-sm border-b border-slate-200 pb-2">Progress Checklist</h3>
+                  <ul class="space-y-3 text-sm font-bold">
+                    <li id="chk-1" class="flex items-center gap-3 text-emerald-600">
+                      <i class="ph-fill ph-check-square"></i><span>Brief Kasus</span>
+                    </li>
+                    <li id="chk-2" class="flex items-center gap-3 text-slate-500">
+                      <i class="ph-bold ph-square"></i><span>Modul Pendukung</span>
+                    </li>
+                    <li id="chk-3" class="flex items-center gap-3 text-slate-500">
+                      <i class="ph-bold ph-square"></i><span>Olah TKP</span>
+                    </li>
+                    <li id="chk-4" class="flex items-center gap-3 text-slate-500">
+                      <i class="ph-bold ph-square"></i><span>Analisis</span>
+                    </li>
+                    <li id="chk-5" class="flex items-center gap-3 text-slate-500">
+                      <i class="ph-bold ph-square"></i><span>Laporan Akhir</span>
+                    </li>
+                  </ul>
+                </div>
+              </aside>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- PAGE: MODUL BELAJAR -->
+      <section id="page-modules" class="page-section h-full overflow-y-auto custom-scroll p-8">
+        <div class="mb-8">
+          <h1 class="text-3xl font-extrabold text-slate-900 mb-2">Modul Belajar</h1>
+          <p class="text-slate-500 font-medium">Kumpulan materi pembelajaran investigasi dan forensik dasar.</p>
+        </div>
+
+        <div class="grid grid-cols-1 xl:grid-cols-3 gap-5">
+          <article class="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
+            <div class="w-12 h-12 bg-blue-100 text-blue-600 rounded-xl flex items-center justify-center text-xl mb-4">
+              <i class="ph-fill ph-video-camera"></i>
+            </div>
+            <h3 class="font-extrabold text-slate-900 mb-2">Dasar Investigasi TKP</h3>
+            <p class="text-sm text-slate-500 mb-5">Pengenalan proses observasi, dokumentasi, dan pengamanan area TKP.</p>
+            <button class="w-full py-3 rounded-xl bg-slate-900 text-white font-bold">Tonton Modul</button>
+          </article>
+
+          <article class="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
+            <div class="w-12 h-12 bg-purple-100 text-purple-600 rounded-xl flex items-center justify-center text-xl mb-4">
+              <i class="ph-fill ph-article"></i>
+            </div>
+            <h3 class="font-extrabold text-slate-900 mb-2">Chain of Custody</h3>
+            <p class="text-sm text-slate-500 mb-5">Panduan menjaga integritas barang bukti dari pengambilan sampai analisis.</p>
+            <button class="w-full py-3 rounded-xl bg-slate-900 text-white font-bold">Baca Modul</button>
+          </article>
+
+          <article class="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
+            <div class="w-12 h-12 bg-amber-100 text-amber-600 rounded-xl flex items-center justify-center text-xl mb-4">
+              <i class="ph-fill ph-file-pdf"></i>
+            </div>
+            <h3 class="font-extrabold text-slate-900 mb-2">Identifikasi Barang Bukti</h3>
+            <p class="text-sm text-slate-500 mb-5">Teknik memilih bukti relevan dan menghubungkannya dengan kronologi kasus.</p>
+            <button class="w-full py-3 rounded-xl bg-slate-900 text-white font-bold">Buka PDF</button>
+          </article>
+        </div>
+      </section>
+
+      <!-- PAGE: PROFIL -->
+      <section id="page-profile" class="page-section h-full overflow-y-auto custom-scroll p-8">
+        <div class="mb-8">
+          <h1 class="text-3xl font-extrabold text-slate-900 mb-2">Profil Mahasiswa</h1>
+          <p class="text-slate-500 font-medium">Data akun, progres kompetensi, dan riwayat evaluasi.</p>
+        </div>
+
+        <div class="grid grid-cols-1 xl:grid-cols-[360px_1fr] gap-6">
+          <div class="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
+            <div class="text-center">
+              <img
+                src="https://ui-avatars.com/api/?name=Ahmad+S&background=d62828&color=fff"
+                alt="Ahmad S."
+                class="w-24 h-24 rounded-3xl mx-auto mb-4"
+              />
+              <h2 class="text-xl font-extrabold text-slate-900">Ahmad S.</h2>
+              <p class="text-sm text-slate-500 font-bold">240101992</p>
+            </div>
+
+            <div class="mt-6 space-y-3">
+              <div class="flex justify-between text-sm">
+                <span class="text-slate-500">Role</span>
+                <span class="font-bold text-slate-900">Mahasiswa</span>
+              </div>
+              <div class="flex justify-between text-sm">
+                <span class="text-slate-500">Kelas</span>
+                <span class="font-bold text-slate-900">Forensik Digital A</span>
+              </div>
+              <div class="flex justify-between text-sm">
+                <span class="text-slate-500">Status</span>
+                <span class="font-bold text-emerald-600">Aktif</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
+            <h3 class="font-extrabold text-slate-900 mb-6">Kompetensi Terakhir</h3>
+
+            <div class="space-y-5">
+              <div>
+                <div class="flex justify-between text-xs font-bold mb-1"><span class="text-slate-600">Evidence Assessment</span><span>90/100</span></div>
+                <div class="w-full bg-slate-100 rounded-full h-2"><div class="bg-brand-500 h-2 rounded-full" style="width:90%"></div></div>
+              </div>
+              <div>
+                <div class="flex justify-between text-xs font-bold mb-1"><span class="text-slate-600">Case Analysis</span><span>84/100</span></div>
+                <div class="w-full bg-slate-100 rounded-full h-2"><div class="bg-brand-500 h-2 rounded-full" style="width:84%"></div></div>
+              </div>
+              <div>
+                <div class="flex justify-between text-xs font-bold mb-1"><span class="text-slate-600">Hypothesis Development</span><span>86/100</span></div>
+                <div class="w-full bg-slate-100 rounded-full h-2"><div class="bg-brand-500 h-2 rounded-full" style="width:86%"></div></div>
+              </div>
+              <div>
+                <div class="flex justify-between text-xs font-bold mb-1"><span class="text-slate-600">Report Writing</span><span>88/100</span></div>
+                <div class="w-full bg-slate-100 rounded-full h-2"><div class="bg-brand-500 h-2 rounded-full" style="width:88%"></div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <!-- MODAL BUKTI -->
+  <div id="evidence-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm hidden z-50 items-center justify-center p-4">
+    <div class="bg-white rounded-3xl w-full max-w-md overflow-hidden shadow-2xl">
+      <div class="bg-slate-100 p-4 border-b border-slate-200 flex justify-between items-center">
+        <div class="font-bold text-sm text-slate-500 uppercase tracking-wide">Inspeksi Benda</div>
+        <button onclick="closeModal()" class="text-slate-400 hover:text-slate-800">
+          <i class="ph-bold ph-x text-lg"></i>
+        </button>
+      </div>
+
+      <div class="p-6 text-center">
+        <div class="w-16 h-16 bg-brand-50 text-brand-500 rounded-full flex items-center justify-center text-3xl mx-auto mb-4">
+          <i class="ph-fill ph-bounding-box"></i>
+        </div>
+        <h3 id="modal-ev-name" class="text-2xl font-extrabold text-slate-900 mb-1">Nama Benda</h3>
+        <div id="modal-ev-cat" class="text-xs font-bold text-brand-500 bg-brand-50 px-2 py-1 rounded inline-block mb-4">Lokasi</div>
+        <p id="modal-ev-desc" class="text-sm text-slate-600 font-medium mb-8 leading-relaxed">Deskripsi benda hasil observasi.</p>
+
+        <div class="flex gap-3">
+          <button onclick="closeModal()" class="flex-1 py-3 border border-slate-200 text-slate-600 font-bold rounded-xl hover:bg-slate-50">
+            Tutup
+          </button>
+          <button id="btn-add-evidence" class="flex-1 py-3 bg-brand-500 text-white font-bold rounded-xl hover:bg-brand-600 shadow-md">
+            Tandai Sbg Bukti
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const pageSubtitles = {
+      dashboard: "Ringkasan aktivitas pembelajaran dan investigasi Anda.",
+      cases: "Workspace pengerjaan kasus dan laporan investigasi.",
+      modules: "Materi pembelajaran untuk mendukung investigasi.",
+      profile: "Informasi akun dan capaian kompetensi mahasiswa."
+    };
+
+    const progressValues = [15, 30, 45, 65, 85, 100];
+    let currentStep = 1;
+    let collectedEvidence = [];
+
+    function showPage(pageName) {
+      document.querySelectorAll(".page-section").forEach(section => {
+        section.classList.remove("active");
+      });
+
+      const target = document.getElementById("page-" + pageName);
+      if (target) target.classList.add("active");
+
+      document.querySelectorAll(".main-nav").forEach(btn => {
+        btn.classList.remove("active", "bg-white/20", "font-bold");
+        btn.classList.add("hover:bg-white/10", "font-medium");
+      });
+
+      const activeButton = document.querySelector(`.main-nav[data-page="${pageName}"]`);
+      if (activeButton) {
+        activeButton.classList.add("active", "bg-white/20", "font-bold");
+        activeButton.classList.remove("hover:bg-white/10", "font-medium");
+      }
+
+      document.getElementById("page-subtitle").innerText = pageSubtitles[pageName] || "";
+    }
+
+    document.querySelectorAll(".main-nav").forEach(btn => {
+      btn.addEventListener("click", () => showPage(btn.dataset.page));
+    });
+
+    function switchCaseStep(stepIndex) {
+      currentStep = stepIndex;
+
+      document.querySelectorAll(".case-step").forEach(step => {
+        step.classList.remove("active");
+      });
+
+      const targetStep = document.getElementById("case-step-" + stepIndex);
+      if (targetStep) targetStep.classList.add("active");
+
+      document.querySelectorAll(".case-nav").forEach(btn => {
+        btn.classList.remove("bg-brand-50", "text-brand-600", "border-brand-200", "bg-slate-100", "text-slate-900", "border-slate-300");
+        btn.classList.add("text-slate-500", "border-transparent");
+      });
+
+      const activeNav = document.getElementById("step-nav-" + stepIndex);
+      if (activeNav) {
+        activeNav.classList.remove("text-slate-500", "border-transparent");
+        if (stepIndex === 6) {
+          activeNav.classList.add("bg-slate-100", "text-slate-900", "border-slate-300");
+        } else {
+          activeNav.classList.add("bg-brand-50", "text-brand-600", "border-brand-200");
+        }
+      }
+
+      updateProgress(stepIndex);
+      updateChecklist(stepIndex);
+    }
+
+    function updateProgress(stepIndex) {
+      if (stepIndex <= 6) {
+        const percent = progressValues[stepIndex - 1];
+        document.getElementById("global-progress-bar").style.width = percent + "%";
+        document.getElementById("global-progress-bar").className = "bg-brand-500 h-full rounded-full transition-all duration-500";
+        document.getElementById("global-progress-text").innerText = percent + "% Selesai";
+        document.getElementById("global-progress-text").className = "text-xs font-bold text-slate-500";
+        document.getElementById("dashboard-progress-bar").style.width = percent + "%";
+        document.getElementById("dashboard-progress-text").innerText = percent + "%";
+      }
+    }
+
+    function updateChecklist(stepIndex) {
+      const labels = {
+        1: "Brief Kasus",
+        2: "Modul Pendukung",
+        3: "Olah TKP",
+        4: "Analisis",
+        5: "Laporan Akhir"
+      };
+
+      for (let i = 1; i <= 5; i++) {
+        const item = document.getElementById("chk-" + i);
+        if (!item) continue;
+
+        const isDone = i <= stepIndex;
+        item.className = isDone
+          ? "flex items-center gap-3 text-emerald-600"
+          : "flex items-center gap-3 text-slate-500";
+
+        item.innerHTML = isDone
+          ? `<i class="ph-fill ph-check-square"></i><span>${labels[i]}</span>`
+          : `<i class="ph-bold ph-square"></i><span>${labels[i]}</span>`;
+      }
+    }
+
+    function openEvidenceModal(name, location, desc) {
+      document.getElementById("modal-ev-name").innerText = name;
+      document.getElementById("modal-ev-cat").innerText = location;
+      document.getElementById("modal-ev-desc").innerText = desc;
+
+      const btn = document.getElementById("btn-add-evidence");
+      const alreadyAdded = collectedEvidence.some(item => item.name === name);
+
+      if (alreadyAdded) {
+        btn.innerText = "Sudah Ditambahkan";
+        btn.className = "flex-1 py-3 bg-slate-300 text-white font-bold rounded-xl cursor-not-allowed";
+        btn.disabled = true;
+        btn.onclick = null;
+      } else {
+        btn.innerText = "Tandai Sbg Bukti";
+        btn.className = "flex-1 py-3 bg-brand-500 text-white font-bold rounded-xl hover:bg-brand-600 shadow-md";
+        btn.disabled = false;
+        btn.onclick = () => addEvidence(name, location, desc);
+      }
+
+      const modal = document.getElementById("evidence-modal");
+      modal.classList.remove("hidden");
+      modal.classList.add("flex");
+    }
+
+    function closeModal() {
+      const modal = document.getElementById("evidence-modal");
+      modal.classList.add("hidden");
+      modal.classList.remove("flex");
+    }
+
+    function addEvidence(name, location, desc) {
+      const alreadyAdded = collectedEvidence.some(item => item.name === name);
+      if (!alreadyAdded) {
+        collectedEvidence.push({ name, location, desc });
+        renderEvidence();
+      }
+      closeModal();
+    }
+
+    function renderEvidence() {
+      const evidenceContainer = document.getElementById("collected-evidence");
+      const reportContainer = document.getElementById("report-evidence-list");
+      const evidenceCounter = document.getElementById("evidence-counter");
+      const summaryCounter = document.getElementById("summary-evidence-count");
+
+      evidenceCounter.innerText = collectedEvidence.length + " Item";
+      if (summaryCounter) summaryCounter.innerText = collectedEvidence.length + " Item";
+
+      evidenceContainer.innerHTML = "";
+      reportContainer.innerHTML = "";
+
+      if (collectedEvidence.length === 0) {
+        evidenceContainer.innerHTML = `
+          <div id="empty-evidence-msg" class="text-center text-xs text-slate-400 font-medium py-4">
+            Belum ada bukti yang dikumpulkan dari TKP.
+          </div>
+        `;
+        reportContainer.innerHTML = `
+          <div class="text-sm text-slate-500 italic">
+            Kumpulkan bukti pada tahap Olah TKP agar muncul di sini.
+          </div>
+        `;
+        return;
+      }
+
+      collectedEvidence.forEach(item => {
+        const evidenceItem = document.createElement("div");
+        evidenceItem.className = "bg-slate-50 border border-slate-100 p-3 rounded-xl text-sm font-bold text-slate-700 flex items-start gap-2";
+        evidenceItem.innerHTML = `
+          <i class="ph-fill ph-check-circle text-emerald-500 mt-0.5"></i>
+          <div>
+            <div>${item.name}</div>
+            <div class="text-[11px] text-slate-400 font-bold mt-0.5">${item.location}</div>
+          </div>
+        `;
+        evidenceContainer.appendChild(evidenceItem);
+
+        const reportItem = document.createElement("div");
+        reportItem.className = "flex items-start gap-2 text-sm font-bold text-slate-700 bg-slate-50 border border-slate-100 p-3 rounded-xl";
+        reportItem.innerHTML = `
+          <input type="checkbox" checked disabled class="w-4 h-4 rounded text-brand-500 mt-0.5">
+          <div>
+            <div>${item.name}</div>
+            <div class="text-xs text-slate-500 font-medium">${item.desc}</div>
+          </div>
+        `;
+        reportContainer.appendChild(reportItem);
+      });
+    }
+
+    function submitWorkspace() {
+      document.querySelectorAll(".case-step").forEach(step => {
+        step.classList.remove("active");
+      });
+
+      document.getElementById("case-step-7").classList.add("active");
+
+      document.querySelectorAll(".case-nav").forEach(btn => {
+        btn.classList.remove("bg-brand-50", "text-brand-600", "border-brand-200", "bg-slate-100", "text-slate-900", "border-slate-300");
+        btn.classList.add("text-slate-500", "border-transparent");
+      });
+
+      document.getElementById("global-progress-bar").style.width = "100%";
+      document.getElementById("global-progress-bar").className = "bg-emerald-500 h-full rounded-full transition-all duration-500";
+      document.getElementById("global-progress-text").innerText = "Dinilai";
+      document.getElementById("global-progress-text").className = "text-xs font-bold text-emerald-600";
+
+      const badge = document.getElementById("case-status-badge");
+      badge.className = "bg-emerald-100 text-emerald-700 px-2.5 py-1 rounded-md uppercase tracking-wide flex items-center gap-1";
+      badge.innerHTML = '<i class="ph-fill ph-check-circle"></i> Selesai Dinilai';
+    }
+  </script>
+</body>
+</html>

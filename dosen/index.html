@@ -1,0 +1,1332 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VeritasLab - AI Crime Scene Composer</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+                    },
+                    colors: {
+                        brand: {
+                            500: '#D62828', // Warna dominan merah sesuai request
+                            600: '#BA2020',
+                            50: '#FDF2F2',
+                        }
+                    },
+                    animation: {
+                        'scan': 'scan 2.5s cubic-bezier(0.4, 0, 0.2, 1) infinite',
+                        'fadeIn': 'fadeIn 0.4s ease-out forwards',
+                    },
+                    keyframes: {
+                        scan: {
+                            '0%, 100%': { transform: 'translateY(0)', opacity: '0' },
+                            '10%, 90%': { opacity: '1' },
+                            '50%': { transform: 'translateY(100%)' },
+                        },
+                        fadeIn: {
+                            'from': { opacity: '0', transform: 'translateY(10px)' },
+                            'to': { opacity: '1', transform: 'translateY(0)' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: #D62828; /* Background dasar merah */
+            margin: 0;
+            overflow: hidden; /* Mencegah scroll pada body, scroll hanya di main area */
+        }
+        
+        /* Smooth view transitions */
+        .step-view {
+            display: none;
+            animation: fadeIn 0.4s ease-out forwards;
+        }
+        .step-view.active {
+            display: block;
+        }
+
+        /* Custom Scrollbar untuk area konten putih */
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 8px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: #F8FAFC; 
+            border-radius: 10px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #E2E8F0; 
+            border-radius: 10px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: #CBD5E1; 
+        }
+
+        /* Styling spesifik untuk stepper clean */
+        .stepper-item.active .step-circle {
+            background-color: #D62828;
+            color: white;
+            border-color: #D62828;
+        }
+        .stepper-item.active .step-text {
+            color: #111827; /* Slate 900 */
+            font-weight: 700;
+        }
+        
+        .upload-dashed {
+            background-image: url("data:image/svg+xml,%3csvg width='100%25' height='100%25' xmlns='http://www.w3.org/2000/svg'%3e%3crect width='100%25' height='100%25' fill='none' rx='24' ry='24' stroke='%23D6282855' stroke-width='2' stroke-dasharray='12%2c 12' stroke-dashoffset='0' stroke-linecap='square'/%3e%3c/svg%3e");
+            border-radius: 24px;
+        }
+        .upload-dashed:hover {
+            background-image: url("data:image/svg+xml,%3csvg width='100%25' height='100%25' xmlns='http://www.w3.org/2000/svg'%3e%3crect width='100%25' height='100%25' fill='none' rx='24' ry='24' stroke='%23D62828' stroke-width='2' stroke-dasharray='12%2c 12' stroke-dashoffset='0' stroke-linecap='square'/%3e%3c/svg%3e");
+        }
+    </style>
+</head>
+<body class="flex h-screen w-full antialiased text-slate-800">
+
+    <!-- SIDEBAR (Solid Red) -->
+    <aside class="w-64 md:w-72 flex-shrink-0 bg-brand-500 text-white flex flex-col p-6 h-full overflow-y-auto">
+        
+        <!-- Profile Section -->
+        <div class="flex items-center gap-4 mt-4 mb-12">
+            <div class="relative">
+                <img src="https://ui-avatars.com/api/?name=Prof+Hendra&background=fff&color=D62828" alt="Profile" class="w-12 h-12 rounded-xl object-cover border-2 border-white/20 shadow-sm">
+                <span class="absolute -top-1 -right-1 bg-white text-brand-500 font-bold text-[10px] w-5 h-5 flex items-center justify-center rounded-full shadow-md border border-brand-500">4</span>
+            </div>
+            <div>
+                <h3 class="font-bold text-white text-lg tracking-tight">Prof. Hendra</h3>
+                <p class="text-white/70 text-sm font-medium">hendra@veritas.edu</p>
+            </div>
+        </div>
+
+        <!-- Navigation Menu -->
+        <nav class="flex flex-col gap-2 font-medium">
+            <button onclick="switchSidebar('dashboard')" id="nav-dashboard" class="nav-item text-left px-4 py-3 rounded-xl bg-white/15 text-white font-bold transition-colors">
+                Dashboard
+            </button>
+            <button onclick="switchSidebar('composer')" id="nav-composer" class="nav-item text-left px-4 py-3 rounded-xl hover:bg-white/10 transition-colors text-white/80 hover:text-white">
+                Penyusun Kasus
+            </button>
+            <button onclick="switchSidebar('class')" id="nav-class" class="nav-item text-left px-4 py-3 rounded-xl hover:bg-white/10 transition-colors text-white/80 hover:text-white">
+                Manajemen Kelas
+            </button>
+            <a href="/dosen/kasus.html" class="nav-item text-left px-4 py-3 rounded-xl hover:bg-white/10 transition-colors text-white/80 hover:text-white">
+                Manajemen Kasus
+            </a>
+            <a href="/dosen/modul.html" class="nav-item text-left px-4 py-3 rounded-xl hover:bg-white/10 transition-colors text-white/80 hover:text-white">
+                Modul Belajar
+            </a>
+        </nav>
+
+      
+    </aside>
+
+    <!-- MAIN CONTENT AREA (White Card) -->
+    <main class="flex-1 bg-white rounded-l-[40px] my-2 mr-2 p-8 md:p-12 overflow-y-auto custom-scrollbar rounded-2xl shadow-[-10px_0_30px_rgba(0,0,0,0.15)] relative">
+        
+        <!-- HEADER LOGO (Inside white area, top right) -->
+        <div class="absolute top-8 right-12 flex items-center gap-2 opacity-80">
+            <i class="ph-bold ph-fingerprint text-brand-500 text-2xl"></i>
+            <span class="font-bold text-xl tracking-tight text-slate-900">Veritas<span class="text-brand-500">Lab</span></span>
+        </div>
+
+        <!-- ================= DASHBOARD VIEW (Simple) ================= -->
+        <div id="view-dashboard" class="step-view">
+            <h1 class="text-3xl font-bold text-slate-900 mb-2">Overview Lab Investigasi</h1>
+            <p class="text-slate-500 mb-8">Pantau aktivitas simulasi kelas dan kasus Anda.</p>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
+                <div class="bg-slate-50 border border-slate-100 rounded-2xl p-6">
+                    <h3 class="text-slate-500 font-medium mb-1">Total Kasus</h3>
+                    <div class="text-4xl font-bold text-slate-900">24</div>
+                </div>
+                <div class="bg-slate-50 border border-slate-100 rounded-2xl p-6">
+                    <h3 class="text-slate-500 font-medium mb-1">Mahasiswa Aktif</h3>
+                    <div class="text-4xl font-bold text-slate-900">148</div>
+                </div>
+                <div class="bg-brand-50 border border-brand-100 rounded-2xl p-6">
+                    <h3 class="text-brand-600 font-medium mb-1">Rata-rata Kelas</h3>
+                    <div class="text-4xl font-bold text-brand-500">84.2</div>
+                </div>
+            </div>
+
+            <div class="bg-white border border-slate-200 rounded-3xl p-8 text-center flex flex-col items-center justify-center py-16">
+                <div class="w-16 h-16 bg-brand-50 text-brand-500 rounded-full flex items-center justify-center text-3xl mb-4">
+                    <i class="ph-fill ph-magic-wand"></i>
+                </div>
+                <h3 class="text-xl font-bold text-slate-900 mb-2">Buat Skenario Baru</h3>
+                <p class="text-slate-500 mb-6 max-w-md">Ubah foto ruangan nyata menjadi kasus investigasi kriminal interaktif menggunakan AI.</p>
+                <button onclick="switchSidebar('composer')" class="px-6 py-3 rounded-xl bg-brand-500 hover:bg-brand-600 text-white font-bold transition-colors">
+                    Mulai AI Case Composer
+                </button>
+            </div>
+        </div>
+
+        <!-- ================= CASE COMPOSER FLOW ================= -->
+        <!-- Global Stepper (Only visible in Composer flow) -->
+        <div id="composer-stepper" class="hidden mb-12 border-b border-slate-100 pb-8 pt-4">
+            <div class="flex items-center justify-center gap-16 md:gap-24" id="stepper-container">
+                <!-- Injected via JS to keep it clean -->
+            </div>
+        </div>
+
+        <!-- VIEW 1: UPLOAD / INPUT SOURCE -->
+        <div id="view-source" class="step-view max-w-5xl mx-auto">
+            
+            <div class="mb-8">
+                <h2 class="text-3xl font-bold text-slate-900 mb-2">Input Multi-Sudut (3D Mapping)</h2>
+                <p class="text-slate-500">Untuk membangun Digital Twin ruangan secara akurat, unggah 3 hingga 5 foto dari sudut yang berbeda.</p>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                
+                <!-- Left: Upload Area -->
+                <div class="lg:col-span-2">
+                    <div id="upload-zone" onclick="simulateUpload()" class="upload-dashed h-80 bg-slate-50 flex flex-col items-center justify-center cursor-pointer transition-colors group relative">
+                        
+                        <div class="w-16 h-16 rounded-full bg-brand-50 text-brand-500 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform shadow-sm">
+                            <i class="ph-bold ph-upload-simple text-2xl"></i>
+                        </div>
+                        <h3 class="text-xl font-bold text-slate-800 mb-1">Klik untuk Upload Foto</h3>
+                        <p class="text-sm text-slate-500 font-medium">Atau drag & drop file ke area ini</p>
+                        <p class="text-xs text-slate-400 mt-4">Mendukung: JPG, PNG (Max 10MB/file)</p>
+
+                        <!-- Upload Overlay -->
+                        <div id="upload-progress" class="absolute inset-0 bg-white/95 rounded-[24px] flex flex-col items-center justify-center hidden z-10 backdrop-blur-sm">
+                            <i class="ph ph-spinner animate-spin text-4xl text-brand-500 mb-4"></i>
+                            <div class="w-full max-w-[250px] space-y-2 mb-4" id="file-list"></div>
+                            <span class="text-sm font-bold text-brand-500" id="upload-status">Memproses gambar...</span>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-4 flex items-center justify-center gap-4 text-sm font-medium text-slate-500">
+                        <span class="w-10 h-px bg-slate-200"></span> ATAU <span class="w-10 h-px bg-slate-200"></span>
+                    </div>
+                    
+                    <button class="mt-4 w-full py-4 rounded-2xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 font-bold transition-colors flex items-center justify-center gap-2">
+                        <i class="ph-bold ph-camera text-xl"></i> Buka Kamera (Mode Panorama)
+                    </button>
+                </div>
+
+                <!-- Right: Guidelines Panel -->
+                <div class="lg:col-span-1">
+                    <div class="bg-slate-50 border border-slate-100 rounded-3xl p-6 h-full">
+                        <h3 class="font-bold text-slate-900 mb-4 flex items-center gap-2">
+                            <i class="ph-fill ph-info text-brand-500"></i> Panduan Foto AI
+                        </h3>
+                        
+                        <div class="space-y-5">
+                            <div class="flex gap-3 items-start">
+                                <div class="w-6 h-6 rounded-full bg-brand-100 text-brand-600 flex items-center justify-center shrink-0 mt-0.5"><i class="ph-bold ph-check text-xs"></i></div>
+                                <div>
+                                    <h4 class="text-sm font-bold text-slate-800">Minimal 3 Sudut</h4>
+                                    <p class="text-xs text-slate-500 mt-1">Sertakan foto dari kiri, tengah, dan kanan agar AI dapat memahami tata ruang 3D dan blind-spot CCTV.</p>
+                                </div>
+                            </div>
+                            <div class="flex gap-3 items-start">
+                                <div class="w-6 h-6 rounded-full bg-brand-100 text-brand-600 flex items-center justify-center shrink-0 mt-0.5"><i class="ph-bold ph-check text-xs"></i></div>
+                                <div>
+                                    <h4 class="text-sm font-bold text-slate-800">Cahaya Cukup</h4>
+                                    <p class="text-xs text-slate-500 mt-1">Nyalakan lampu ruangan. Hindari memotret langsung menghadap jendela yang sangat terang (backlight).</p>
+                                </div>
+                            </div>
+                            <div class="flex gap-3 items-start">
+                                <div class="w-6 h-6 rounded-full bg-brand-100 text-brand-600 flex items-center justify-center shrink-0 mt-0.5"><i class="ph-bold ph-check text-xs"></i></div>
+                                <div>
+                                    <h4 class="text-sm font-bold text-slate-800">Cakup Objek Utama</h4>
+                                    <p class="text-xs text-slate-500 mt-1">Pastikan meja, pintu masuk, dan area tempat barang hilang terlihat jelas di salah satu foto.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- VIEW 2: AI ANALYSIS -->
+        <div id="view-analyze" class="step-view max-w-4xl mx-auto">
+            <div class="text-center mb-10">
+                <h2 class="text-3xl font-bold text-slate-900 mb-2">Vision Analysis</h2>
+                <p class="text-brand-500 font-bold" id="loading-text">Menyatukan 3 foto menjadi peta tata ruang (Digital Twin)...</p>
+            </div>
+
+            <div class="bg-white rounded-[32px] p-2 border border-slate-200 shadow-xl relative overflow-hidden">
+                <div class="relative rounded-[24px] overflow-hidden aspect-video bg-slate-100">
+                    <img src="https://images.unsplash.com/photo-1577412647305-991150c7d163?auto=format&fit=crop&q=80&w=1600" alt="Scanning View" class="w-full h-full object-cover">
+                    
+                    <!-- Overlay gelap ringan untuk kontras scanner -->
+                    <div class="absolute inset-0 bg-black/10"></div>
+                    
+                    <!-- Scanner Line (Red) -->
+                    <div class="absolute top-0 left-0 w-full h-[200%] bg-gradient-to-b from-transparent via-brand-500/20 to-brand-500/60 border-b-2 border-brand-500 animate-scan pointer-events-none" style="mix-blend-mode: multiply;"></div>
+                    
+                    <!-- Bounding Boxes container -->
+                    <div id="bounding-boxes" class="absolute inset-0 pointer-events-none"></div>
+                </div>
+
+                <!-- Clean Logs -->
+                <div class="absolute bottom-6 left-6 right-6 bg-white/95 backdrop-blur rounded-2xl p-4 shadow-lg border border-slate-100">
+                    <div class="font-mono text-xs text-slate-700 h-16 overflow-hidden flex flex-col justify-end" id="ai-logs">
+                        <div class="text-slate-400">Menunggu inisialisasi...</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- VIEW 3: CONFIGURATION -->
+        <div id="view-config" class="step-view max-w-3xl mx-auto">
+            <div class="mb-8">
+                <h2 class="text-3xl font-bold text-slate-900 mb-2">Konfigurasi Pembelajaran</h2>
+                <p class="text-slate-500">Tentukan arah cerita investigasi dan kompetensi yang ingin dicapai mahasiswa.</p>
+            </div>
+
+            <div class="bg-white border border-slate-200 rounded-[32px] p-8 space-y-8 shadow-sm">
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div>
+                        <label class="block text-sm font-bold text-slate-800 mb-2">Kategori Kejahatan</label>
+                        <select class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3.5 text-slate-800 focus:outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500 appearance-none font-medium">
+                            <option>Pencurian Barang (Disarankan)</option>
+                            <option>Perusakan Fasilitas (Vandalisme)</option>
+                            <option>Insiden Keamanan Digital</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-bold text-slate-800 mb-2">Tingkat Kesulitan</label>
+                        <div class="flex bg-slate-100 rounded-xl p-1 border border-slate-200">
+                            <button class="flex-1 py-2.5 text-sm text-slate-500 font-semibold rounded-lg transition">Basic</button>
+                            <button class="flex-1 py-2.5 text-sm bg-white text-brand-600 rounded-lg font-bold shadow-sm border border-slate-200">Intermediate</button>
+                            <button class="flex-1 py-2.5 text-sm text-slate-500 font-semibold rounded-lg transition">Advanced</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-bold text-slate-800 mb-4">Capaian Pembelajaran (Learning Outcomes)</label>
+                    <div class="flex flex-wrap gap-3">
+                        <!-- Custom styled checkboxes -->
+                        <label class="cursor-pointer relative">
+                            <input type="checkbox" class="peer sr-only" checked>
+                            <div class="px-5 py-2.5 rounded-full border border-slate-200 bg-slate-50 text-slate-600 text-sm font-bold transition-all peer-checked:bg-brand-50 peer-checked:border-brand-500 peer-checked:text-brand-600 flex items-center gap-2">
+                                Evidence Assessment
+                            </div>
+                        </label>
+                        <label class="cursor-pointer relative">
+                            <input type="checkbox" class="peer sr-only" checked>
+                            <div class="px-5 py-2.5 rounded-full border border-slate-200 bg-slate-50 text-slate-600 text-sm font-bold transition-all peer-checked:bg-brand-50 peer-checked:border-brand-500 peer-checked:text-brand-600 flex items-center gap-2">
+                                Information Gathering
+                            </div>
+                        </label>
+                        <label class="cursor-pointer relative">
+                            <input type="checkbox" class="peer sr-only">
+                            <div class="px-5 py-2.5 rounded-full border border-slate-200 bg-slate-50 text-slate-600 text-sm font-bold transition-all peer-checked:bg-brand-50 peer-checked:border-brand-500 peer-checked:text-brand-600 flex items-center gap-2">
+                                Criminal Case Analysis
+                            </div>
+                        </label>
+                        <label class="cursor-pointer relative">
+                            <input type="checkbox" class="peer sr-only" checked>
+                            <div class="px-5 py-2.5 rounded-full border border-slate-200 bg-slate-50 text-slate-600 text-sm font-bold transition-all peer-checked:bg-brand-50 peer-checked:border-brand-500 peer-checked:text-brand-600 flex items-center gap-2">
+                                Hypothesis Development
+                            </div>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="pt-6 border-t border-slate-100 flex justify-end gap-4">
+                    <button onclick="changeStep(1)" class="px-6 py-3 rounded-xl font-bold text-slate-500 hover:bg-slate-50 transition">Kembali</button>
+                    <button onclick="generateCase(event)" class="px-8 py-3 rounded-xl bg-brand-500 hover:bg-brand-600 text-white font-bold shadow-lg shadow-brand-500/20 flex items-center gap-2 transition-colors">
+                        <i class="ph-bold ph-sparkle"></i> Generate Kasus
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- VIEW 4: GENERATED CASE (EDITOR) -->
+        <div id="view-result" class="step-view">
+            <div class="mb-8 flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-slate-100 pb-6">
+                <div>
+                    <div class="text-brand-500 font-bold text-sm mb-1 uppercase tracking-wider">Berhasil Dibuat</div>
+                    <h2 class="text-3xl font-bold text-slate-900 flex items-center gap-3">
+                        Pencurian Laptop di Ruang Kelas <button class="text-slate-400 hover:text-brand-500"><i class="ph ph-pencil-simple"></i></button>
+                    </h2>
+                </div>
+                <div class="flex gap-3">
+                    <button class="px-5 py-2.5 rounded-xl border border-slate-200 text-slate-700 font-bold hover:bg-slate-50 flex items-center gap-2">
+                        <i class="ph ph-eye text-lg"></i> Preview
+                    </button>
+                    <button onclick="alert('Beralih ke halaman Manajemen Kasus...')" class="px-6 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold flex items-center gap-2 shadow-md">
+                        Publish ke Kelas
+                    </button>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+                
+                <!-- Left: 3D Mapping & Evidence -->
+                <div class="lg:col-span-7 space-y-6">
+                    <div class="bg-white border border-slate-200 rounded-3xl p-4 shadow-sm relative">
+                        <div class="absolute top-6 left-6 z-10 bg-white/90 backdrop-blur rounded-lg px-3 py-1.5 text-xs font-bold text-slate-800 border border-slate-200 shadow-sm flex items-center gap-2">
+                            <i class="ph-fill ph-cube text-brand-500"></i> PETA SPASIAL 3D
+                        </div>
+
+                        <div class="relative rounded-2xl overflow-hidden aspect-video bg-slate-100 border border-slate-200">
+                            <img src="https://images.unsplash.com/photo-1577412647305-991150c7d163?auto=format&fit=crop&q=80&w=1600" alt="Crime Scene" class="w-full h-full object-cover">
+                            
+                            <!-- Clean Red Markers -->
+                            <div class="absolute top-[60%] left-[25%] w-8 h-8 bg-brand-500 border-2 border-white text-white font-bold rounded-full flex items-center justify-center cursor-pointer transform -translate-x-1/2 -translate-y-1/2 shadow-lg group z-20">
+                                1
+                                <!-- Hover Card -->
+                                <div class="absolute bottom-full mb-3 left-1/2 transform -translate-x-1/2 bg-white border border-slate-200 p-3 rounded-xl w-48 shadow-xl opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
+                                    <div class="font-bold text-slate-900 text-sm mb-1">Meja Kosong</div>
+                                    <div class="text-xs text-slate-500 leading-relaxed font-medium">Titik terakhir laptop terlihat. Tidak ada tanda kerusakan.</div>
+                                </div>
+                            </div>
+
+                            <div class="absolute top-[20%] right-[10%] w-8 h-8 bg-slate-800 border-2 border-white text-white font-bold rounded-full flex items-center justify-center cursor-pointer transform -translate-x-1/2 -translate-y-1/2 shadow-lg group z-20">
+                                2
+                                <!-- Hover Card -->
+                                <div class="absolute bottom-full mb-3 left-1/2 transform -translate-x-1/2 bg-white border border-slate-200 p-3 rounded-xl w-48 shadow-xl opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
+                                    <div class="font-bold text-slate-900 text-sm mb-1">CCTV Ruangan</div>
+                                    <div class="text-xs text-slate-500 leading-relaxed font-medium">Menyorot pintu masuk. Area meja korban adalah blind spot.</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Evidence List -->
+                        <div class="mt-4 grid grid-cols-2 sm:grid-cols-3 gap-3">
+                            <div class="bg-slate-50 border border-slate-200 rounded-xl p-3 flex items-center gap-3">
+                                <div class="w-8 h-8 rounded-lg bg-brand-100 text-brand-600 flex items-center justify-center shrink-0"><i class="ph-fill ph-laptop"></i></div>
+                                <div><div class="text-sm font-bold text-slate-800">Laptop Asus</div><div class="text-xs text-brand-600 font-bold">Objek Hilang</div></div>
+                            </div>
+                            <div class="bg-slate-50 border border-slate-200 rounded-xl p-3 flex items-center gap-3">
+                                <div class="w-8 h-8 rounded-lg bg-slate-200 text-slate-700 flex items-center justify-center shrink-0"><i class="ph-fill ph-video-camera"></i></div>
+                                <div><div class="text-sm font-bold text-slate-800">Rekaman CCTV</div><div class="text-xs text-slate-500 font-medium">Barang Bukti #2</div></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Timeline -->
+                    <div class="bg-white border border-slate-200 rounded-3xl p-6 shadow-sm">
+                        <div class="flex justify-between items-center mb-6">
+                            <h3 class="font-bold text-lg text-slate-900">Kronologi Singkat</h3>
+                            <button class="text-sm font-bold text-brand-500 hover:text-brand-600">Edit Data</button>
+                        </div>
+                        <div class="space-y-4 relative before:absolute before:inset-0 before:ml-2.5 before:-translate-x-px before:h-full before:w-0.5 before:bg-slate-200">
+                            
+                            <div class="relative flex items-start gap-4">
+                                <div class="w-5 h-5 rounded-full border-4 border-white bg-slate-300 shadow-sm shrink-0 z-10 mt-1"></div>
+                                <div class="bg-slate-50 border border-slate-100 p-4 rounded-xl flex-1">
+                                    <div class="font-bold text-slate-900 mb-1">08:00 WIB</div>
+                                    <div class="text-sm text-slate-600 font-medium">Kelas dimulai. Laptop diletakkan di atas meja.</div>
+                                </div>
+                            </div>
+                            
+                            <div class="relative flex items-start gap-4">
+                                <div class="w-5 h-5 rounded-full border-4 border-white bg-brand-500 shadow-sm shrink-0 z-10 mt-1"></div>
+                                <div class="bg-brand-50 border border-brand-100 p-4 rounded-xl flex-1">
+                                    <div class="font-bold text-brand-700 mb-1">10:15 WIB</div>
+                                    <div class="text-sm text-brand-700 font-medium">Mahasiswa istirahat. Korban kembali pukul 10:30 dan laptop hilang.</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right: Information & Rubric -->
+                <div class="lg:col-span-5 space-y-6">
+                    <div class="bg-white border border-slate-200 rounded-3xl p-6 shadow-sm">
+                        <h3 class="font-bold text-lg text-slate-900 mb-4">Saksi & Profil</h3>
+                        <div class="space-y-3">
+                            <div class="flex items-center justify-between p-3 rounded-xl border border-slate-100 hover:border-slate-300 transition-colors">
+                                <div class="flex items-center gap-3">
+                                    <img src="https://ui-avatars.com/api/?name=Budi&background=f1f5f9&color=475569" class="w-10 h-10 rounded-full">
+                                    <div>
+                                        <div class="text-sm font-bold text-slate-800">Budi (Saksi 1)</div>
+                                        <div class="text-xs text-slate-500 font-medium">Rekan sebangku korban</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="flex items-center justify-between p-3 rounded-xl border border-slate-100 hover:border-slate-300 transition-colors">
+                                <div class="flex items-center gap-3">
+                                    <img src="https://ui-avatars.com/api/?name=Joko&background=fef2f2&color=d62828" class="w-10 h-10 rounded-full">
+                                    <div>
+                                        <div class="text-sm font-bold text-slate-800">Pak Joko (Suspect)</div>
+                                        <div class="text-xs text-slate-500 font-medium">Petugas kebersihan lantai 2</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-white border border-slate-200 rounded-3xl p-6 shadow-sm">
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="font-bold text-lg text-slate-900">Rubrik AI</h3>
+                            <span class="text-xs font-bold bg-slate-100 text-slate-600 px-2 py-1 rounded">GENERATED</span>
+                        </div>
+                        <div class="space-y-4">
+                            <div>
+                                <div class="flex justify-between text-sm mb-1.5 font-bold">
+                                    <span class="text-slate-700">Evidence Assessment</span>
+                                    <span class="text-brand-500">30%</span>
+                                </div>
+                                <div class="w-full bg-slate-100 rounded-full h-2"><div class="bg-brand-500 h-2 rounded-full" style="width: 30%"></div></div>
+                            </div>
+                            <div>
+                                <div class="flex justify-between text-sm mb-1.5 font-bold">
+                                    <span class="text-slate-700">Hypothesis Development</span>
+                                    <span class="text-slate-800">40%</span>
+                                </div>
+                                <div class="w-full bg-slate-100 rounded-full h-2"><div class="bg-slate-800 h-2 rounded-full" style="width: 40%"></div></div>
+                            </div>
+                            <div>
+                                <div class="flex justify-between text-sm mb-1.5 font-bold">
+                                    <span class="text-slate-700">Information Gathering</span>
+                                    <span class="text-slate-400">30%</span>
+                                </div>
+                                <div class="w-full bg-slate-100 rounded-full h-2"><div class="bg-slate-400 h-2 rounded-full" style="width: 30%"></div></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ================= CLASS MANAGEMENT (LIST) ================= -->
+        <div id="view-class-list" class="step-view">
+            <div class="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-8">
+                <div>
+                    <h1 class="text-3xl font-bold text-slate-900 mb-2">Manajemen Kelas</h1>
+                    <p class="text-slate-500">Kelola kelas, mahasiswa, tugas kasus, dan hasil pembelajaran.</p>
+                </div>
+                <button class="px-6 py-3 rounded-xl bg-brand-500 hover:bg-brand-600 text-white font-bold shadow-lg shadow-brand-500/20 flex items-center gap-2 transition-colors shrink-0">
+                    <i class="ph-bold ph-plus"></i> Buat Kelas Baru
+                </button>
+            </div>
+
+            <!-- Stats -->
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6 mb-10">
+                <div class="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm">
+                    <h3 class="text-slate-500 text-sm font-bold mb-1">Total Kelas</h3>
+                    <div class="text-3xl font-extrabold text-slate-900">4</div>
+                </div>
+                <div class="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm">
+                    <h3 class="text-slate-500 text-sm font-bold mb-1">Total Mahasiswa</h3>
+                    <div class="text-3xl font-extrabold text-slate-900">128</div>
+                </div>
+                <div class="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm">
+                    <h3 class="text-slate-500 text-sm font-bold mb-1">Kasus Aktif</h3>
+                    <div class="text-3xl font-extrabold text-slate-900">7</div>
+                </div>
+                <div class="bg-brand-50 border border-brand-100 rounded-2xl p-5 shadow-sm">
+                    <h3 class="text-brand-700 text-sm font-bold mb-1">Rata-rata Progress</h3>
+                    <div class="text-3xl font-extrabold text-brand-500">76%</div>
+                </div>
+            </div>
+
+            <!-- Class Grid -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Class Card 1 -->
+                <div class="bg-white border border-slate-200 rounded-3xl p-6 shadow-sm hover:shadow-md transition-shadow flex flex-col h-full">
+                    <div class="flex justify-between items-start mb-4">
+                        <div class="w-12 h-12 bg-slate-100 text-slate-600 rounded-2xl flex items-center justify-center text-2xl font-bold"><i class="ph-fill ph-student"></i></div>
+                        <span class="bg-green-100 text-green-700 text-xs font-bold px-3 py-1 rounded-full border border-green-200">Semester Genap</span>
+                    </div>
+                    <h3 class="text-xl font-bold text-slate-900 mb-1">Kriminologi Digital A</h3>
+                    <p class="text-slate-500 text-sm mb-6 font-medium">32 Mahasiswa • 3 Kasus Aktif</p>
+                    
+                    <div class="mt-auto space-y-4">
+                        <div>
+                            <div class="flex justify-between text-xs font-bold mb-1.5">
+                                <span class="text-slate-600">Progress Kelas</span>
+                                <span class="text-brand-500">78%</span>
+                            </div>
+                            <div class="w-full bg-slate-100 rounded-full h-2"><div class="bg-brand-500 h-2 rounded-full" style="width: 78%"></div></div>
+                        </div>
+                        <div class="flex items-center justify-between text-sm">
+                            <span class="text-slate-500 font-medium">Rata-rata Nilai</span>
+                            <span class="font-extrabold text-slate-900">84</span>
+                        </div>
+                        <button onclick="openClassDetail('class-1')" class="w-full py-3 mt-2 rounded-xl border-2 border-slate-100 hover:border-brand-500 hover:text-brand-500 text-slate-700 font-bold transition-colors flex items-center justify-center gap-2">
+                            Kelola Kelas <i class="ph-bold ph-arrow-right"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Class Card 2 -->
+                <div class="bg-white border border-slate-200 rounded-3xl p-6 shadow-sm hover:shadow-md transition-shadow flex flex-col h-full">
+                    <div class="flex justify-between items-start mb-4">
+                        <div class="w-12 h-12 bg-slate-100 text-slate-600 rounded-2xl flex items-center justify-center text-2xl font-bold"><i class="ph-fill ph-scales"></i></div>
+                        <span class="bg-green-100 text-green-700 text-xs font-bold px-3 py-1 rounded-full border border-green-200">Semester Genap</span>
+                    </div>
+                    <h3 class="text-xl font-bold text-slate-900 mb-1">Hukum Acara Pidana B</h3>
+                    <p class="text-slate-500 text-sm mb-6 font-medium">28 Mahasiswa • 2 Kasus Aktif</p>
+                    
+                    <div class="mt-auto space-y-4">
+                        <div>
+                            <div class="flex justify-between text-xs font-bold mb-1.5">
+                                <span class="text-slate-600">Progress Kelas</span>
+                                <span class="text-brand-500">69%</span>
+                            </div>
+                            <div class="w-full bg-slate-100 rounded-full h-2"><div class="bg-brand-500 h-2 rounded-full" style="width: 69%"></div></div>
+                        </div>
+                        <div class="flex items-center justify-between text-sm">
+                            <span class="text-slate-500 font-medium">Rata-rata Nilai</span>
+                            <span class="font-extrabold text-slate-900">81</span>
+                        </div>
+                        <button onclick="openClassDetail('class-2')" class="w-full py-3 mt-2 rounded-xl border-2 border-slate-100 hover:border-brand-500 hover:text-brand-500 text-slate-700 font-bold transition-colors flex items-center justify-center gap-2">
+                            Kelola Kelas <i class="ph-bold ph-arrow-right"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ================= CLASS MANAGEMENT (DETAIL) ================= -->
+        <div id="view-class-detail" class="step-view">
+            <!-- Header -->
+            <div class="mb-6">
+                <button onclick="switchView('class-list')" class="text-sm font-bold text-slate-500 hover:text-brand-500 flex items-center gap-1 mb-4 transition-colors">
+                    <i class="ph-bold ph-arrow-left"></i> Kembali ke Daftar Kelas
+                </button>
+                <div class="flex flex-col lg:flex-row lg:items-end justify-between gap-6">
+                    <div>
+                        <div class="flex items-center gap-3 mb-2">
+                            <h1 class="text-3xl font-bold text-slate-900">Kriminologi Digital A</h1>
+                            <span class="bg-slate-100 text-slate-600 text-xs font-bold px-3 py-1 rounded-full">32 Mahasiswa</span>
+                        </div>
+                        <p class="text-slate-500">Semester Genap 2026 • Program Studi Ilmu Kriminologi</p>
+                    </div>
+                    <div class="flex flex-wrap gap-3">
+                        <button class="px-5 py-2.5 rounded-xl border-2 border-slate-100 text-slate-700 font-bold hover:bg-slate-50 flex items-center gap-2 transition-colors">
+                            <i class="ph-bold ph-user-plus"></i> Tambah Mahasiswa
+                        </button>
+                        <button class="px-5 py-2.5 rounded-xl border-2 border-slate-100 text-slate-700 font-bold hover:bg-slate-50 flex items-center gap-2 transition-colors">
+                            <i class="ph-bold ph-download-simple"></i> Export Nilai
+                        </button>
+                        <button class="px-5 py-2.5 rounded-xl bg-brand-500 hover:bg-brand-600 text-white font-bold shadow-lg shadow-brand-500/20 flex items-center gap-2 transition-colors">
+                            <i class="ph-bold ph-plus"></i> Berikan Kasus
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tabs Navigation -->
+            <div class="border-b border-slate-200 mb-8 overflow-x-auto no-scrollbar">
+                <nav class="flex gap-8 min-w-max px-1">
+                    <button onclick="switchClassTab('overview')" id="tab-btn-overview" class="tab-btn pb-4 font-bold text-brand-500 border-b-2 border-brand-500 transition-colors">Overview</button>
+                    <button onclick="switchClassTab('mahasiswa')" id="tab-btn-mahasiswa" class="tab-btn pb-4 font-bold text-slate-500 hover:text-slate-800 border-b-2 border-transparent transition-colors">Mahasiswa</button>
+                    <button onclick="switchClassTab('kasus')" id="tab-btn-kasus" class="tab-btn pb-4 font-bold text-slate-500 hover:text-slate-800 border-b-2 border-transparent transition-colors">Tugas Kasus</button>
+                    <button onclick="switchClassTab('progress')" id="tab-btn-progress" class="tab-btn pb-4 font-bold text-slate-500 hover:text-slate-800 border-b-2 border-transparent transition-colors">Progress</button>
+                    <button onclick="switchClassTab('hasil')" id="tab-btn-hasil" class="tab-btn pb-4 font-bold text-slate-500 hover:text-slate-800 border-b-2 border-transparent transition-colors">Hasil Belajar</button>
+                </nav>
+            </div>
+
+            <!-- TAB 1: OVERVIEW -->
+            <div id="tab-overview" class="class-tab-content block">
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <!-- Text Summary -->
+                    <div class="bg-white border border-slate-200 rounded-3xl p-6 shadow-sm space-y-6">
+                        <div>
+                            <div class="text-sm font-bold text-slate-500 mb-1">Status Kelas</div>
+                            <div class="text-2xl font-bold text-slate-900">Berjalan Baik</div>
+                        </div>
+                        <hr class="border-slate-100">
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <div class="text-xs font-bold text-slate-500 mb-1">Kasus Selesai</div>
+                                <div class="text-xl font-bold text-slate-900">21<span class="text-sm text-slate-400">/32</span></div>
+                            </div>
+                            <div>
+                                <div class="text-xs font-bold text-slate-500 mb-1">Rata-rata Nilai</div>
+                                <div class="text-xl font-bold text-brand-500">84.2</div>
+                            </div>
+                        </div>
+                        <hr class="border-slate-100">
+                        <div class="bg-red-50 border border-red-100 p-4 rounded-2xl">
+                            <div class="text-xs font-bold text-red-600 mb-1 flex items-center gap-1"><i class="ph-fill ph-warning-circle"></i> Kompetensi Terlemah</div>
+                            <div class="text-sm font-bold text-red-900">Investigative Report Writing (72%)</div>
+                        </div>
+                    </div>
+
+                    <!-- Doughnut Chart -->
+                    <div class="bg-white border border-slate-200 rounded-3xl p-6 shadow-sm flex flex-col items-center justify-center">
+                        <h3 class="w-full text-left font-bold text-slate-900 mb-4">Progress Penyelesaian</h3>
+                        <div class="w-48 h-48 relative">
+                            <canvas id="chartProgress"></canvas>
+                            <div class="absolute inset-0 flex items-center justify-center flex-col">
+                                <span class="text-2xl font-extrabold text-slate-900">78%</span>
+                                <span class="text-xs font-bold text-slate-500">Selesai</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Competency Bars -->
+                    <div class="bg-white border border-slate-200 rounded-3xl p-6 shadow-sm">
+                        <h3 class="font-bold text-slate-900 mb-6">Distribusi Kompetensi</h3>
+                        <div class="space-y-4">
+                            <div>
+                                <div class="flex justify-between text-xs font-bold mb-1"><span class="text-slate-700">Evidence Assessment</span><span class="text-slate-900">88%</span></div>
+                                <div class="w-full bg-slate-100 rounded-full h-2"><div class="bg-emerald-500 h-2 rounded-full" style="width: 88%"></div></div>
+                            </div>
+                            <div>
+                                <div class="flex justify-between text-xs font-bold mb-1"><span class="text-slate-700">Criminal Case Analysis</span><span class="text-slate-900">85%</span></div>
+                                <div class="w-full bg-slate-100 rounded-full h-2"><div class="bg-emerald-500 h-2 rounded-full" style="width: 85%"></div></div>
+                            </div>
+                            <div>
+                                <div class="flex justify-between text-xs font-bold mb-1"><span class="text-slate-700">Information Gathering</span><span class="text-slate-900">79%</span></div>
+                                <div class="w-full bg-slate-100 rounded-full h-2"><div class="bg-amber-500 h-2 rounded-full" style="width: 79%"></div></div>
+                            </div>
+                            <div>
+                                <div class="flex justify-between text-xs font-bold mb-1"><span class="text-slate-700">Report Writing</span><span class="text-slate-900">72%</span></div>
+                                <div class="w-full bg-slate-100 rounded-full h-2"><div class="bg-brand-500 h-2 rounded-full" style="width: 72%"></div></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 2: MAHASISWA -->
+            <div id="tab-mahasiswa" class="class-tab-content hidden">
+                <div class="bg-white border border-slate-200 rounded-3xl shadow-sm overflow-hidden">
+                    <div class="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
+                        <h3 class="font-bold text-slate-900">Daftar Mahasiswa (32)</h3>
+                        <div class="relative">
+                            <i class="ph ph-magnifying-glass absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400"></i>
+                            <input type="text" placeholder="Cari mahasiswa..." class="pl-9 pr-4 py-2 border border-slate-200 rounded-xl text-sm focus:outline-none focus:border-brand-500 w-64">
+                        </div>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr class="bg-slate-50 border-b border-slate-200 text-xs font-bold text-slate-500 uppercase tracking-wider">
+                                    <th class="p-4 pl-6">Mahasiswa</th>
+                                    <th class="p-4">NIM</th>
+                                    <th class="p-4">Email</th>
+                                    <th class="p-4">Status</th>
+                                    <th class="p-4 pr-6 text-right">Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-slate-100 text-sm">
+                                <tr class="hover:bg-slate-50 transition-colors group">
+                                    <td class="p-4 pl-6 flex items-center gap-3">
+                                        <img src="https://ui-avatars.com/api/?name=Najma+Aulia&background=f1f5f9&color=475569" class="w-8 h-8 rounded-full">
+                                        <span class="font-bold text-slate-900">Najma Aulia</span>
+                                    </td>
+                                    <td class="p-4 text-slate-600 font-medium">2401001</td>
+                                    <td class="p-4 text-slate-500">najma.a@student.univ.edu</td>
+                                    <td class="p-4"><span class="bg-emerald-100 text-emerald-700 px-2.5 py-1 rounded-md text-xs font-bold">Aktif</span></td>
+                                    <td class="p-4 pr-6 text-right">
+                                        <button class="text-slate-400 hover:text-brand-500 mx-1"><i class="ph-bold ph-eye text-lg"></i></button>
+                                        <button class="text-slate-400 hover:text-red-500 mx-1"><i class="ph-bold ph-trash text-lg"></i></button>
+                                    </td>
+                                </tr>
+                                <tr class="hover:bg-slate-50 transition-colors group">
+                                    <td class="p-4 pl-6 flex items-center gap-3">
+                                        <img src="https://ui-avatars.com/api/?name=Bima+Sakti&background=f1f5f9&color=475569" class="w-8 h-8 rounded-full">
+                                        <span class="font-bold text-slate-900">Bima Sakti</span>
+                                    </td>
+                                    <td class="p-4 text-slate-600 font-medium">2401002</td>
+                                    <td class="p-4 text-slate-500">bima.s@student.univ.edu</td>
+                                    <td class="p-4"><span class="bg-emerald-100 text-emerald-700 px-2.5 py-1 rounded-md text-xs font-bold">Aktif</span></td>
+                                    <td class="p-4 pr-6 text-right">
+                                        <button class="text-slate-400 hover:text-brand-500 mx-1"><i class="ph-bold ph-eye text-lg"></i></button>
+                                        <button class="text-slate-400 hover:text-red-500 mx-1"><i class="ph-bold ph-trash text-lg"></i></button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 3: KASUS -->
+            <div id="tab-kasus" class="class-tab-content hidden">
+                <div class="grid grid-cols-1 gap-4">
+                    <!-- Case Row -->
+                    <div class="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-6 hover:border-brand-300 transition-colors">
+                        <div class="flex items-start gap-4 flex-1">
+                            <div class="w-12 h-12 rounded-xl bg-brand-50 text-brand-600 flex items-center justify-center text-2xl shrink-0"><i class="ph-fill ph-magnifying-glass"></i></div>
+                            <div>
+                                <div class="flex items-center gap-2 mb-1">
+                                    <h4 class="font-bold text-slate-900 text-lg">Pencurian Laptop di Ruang Kelas</h4>
+                                    <span class="bg-emerald-100 text-emerald-700 text-[10px] uppercase font-bold px-2 py-0.5 rounded border border-emerald-200">Aktif</span>
+                                </div>
+                                <div class="text-sm font-medium text-slate-500 flex items-center gap-4">
+                                    <span><i class="ph ph-tag"></i> Investigasi TKP</span>
+                                    <span><i class="ph ph-calendar"></i> DL: 12 Jul 2026</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="w-full md:w-48 shrink-0">
+                            <div class="flex justify-between text-xs font-bold mb-1 text-slate-600"><span>Progress</span><span>78%</span></div>
+                            <div class="w-full bg-slate-100 rounded-full h-2"><div class="bg-brand-500 h-2 rounded-full" style="width: 78%"></div></div>
+                        </div>
+                        <button class="px-4 py-2 border-2 border-slate-100 rounded-xl font-bold text-slate-700 hover:border-brand-500 hover:text-brand-500 transition-colors shrink-0">
+                            Lihat Detail
+                        </button>
+                    </div>
+
+                    <!-- Case Row -->
+                    <div class="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-6 hover:border-brand-300 transition-colors">
+                        <div class="flex items-start gap-4 flex-1">
+                            <div class="w-12 h-12 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center text-2xl shrink-0"><i class="ph-fill ph-chart-line-up"></i></div>
+                            <div>
+                                <div class="flex items-center gap-2 mb-1">
+                                    <h4 class="font-bold text-slate-900 text-lg">Analisis Pola Pencurian Kampus</h4>
+                                    <span class="bg-emerald-100 text-emerald-700 text-[10px] uppercase font-bold px-2 py-0.5 rounded border border-emerald-200">Aktif</span>
+                                </div>
+                                <div class="text-sm font-medium text-slate-500 flex items-center gap-4">
+                                    <span><i class="ph ph-tag"></i> Prediksi Kriminalitas</span>
+                                    <span><i class="ph ph-calendar"></i> DL: 15 Jul 2026</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="w-full md:w-48 shrink-0">
+                            <div class="flex justify-between text-xs font-bold mb-1 text-slate-600"><span>Progress</span><span>64%</span></div>
+                            <div class="w-full bg-slate-100 rounded-full h-2"><div class="bg-brand-500 h-2 rounded-full" style="width: 64%"></div></div>
+                        </div>
+                        <button class="px-4 py-2 border-2 border-slate-100 rounded-xl font-bold text-slate-700 hover:border-brand-500 hover:text-brand-500 transition-colors shrink-0">
+                            Lihat Detail
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 4: PROGRESS -->
+            <div id="tab-progress" class="class-tab-content hidden">
+                <div class="flex gap-2 mb-6">
+                    <button class="px-4 py-2 rounded-lg bg-slate-800 text-white font-bold text-sm">Semua</button>
+                    <button class="px-4 py-2 rounded-lg bg-white border border-slate-200 text-slate-600 font-bold text-sm hover:bg-slate-50">Belum Mulai</button>
+                    <button class="px-4 py-2 rounded-lg bg-white border border-slate-200 text-slate-600 font-bold text-sm hover:bg-slate-50">Proses</button>
+                    <button class="px-4 py-2 rounded-lg bg-white border border-slate-200 text-slate-600 font-bold text-sm hover:bg-slate-50">Selesai</button>
+                </div>
+                
+                <div class="bg-white border border-slate-200 rounded-3xl shadow-sm overflow-hidden">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="bg-slate-50 border-b border-slate-200 text-xs font-bold text-slate-500 uppercase tracking-wider">
+                                <th class="p-4 pl-6">Nama</th>
+                                <th class="p-4">Kasus</th>
+                                <th class="p-4">Progress</th>
+                                <th class="p-4">Status</th>
+                                <th class="p-4">Waktu Submit</th>
+                                <th class="p-4 pr-6">Nilai</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-100 text-sm font-medium">
+                            <tr class="hover:bg-slate-50">
+                                <td class="p-4 pl-6 text-slate-900 font-bold">Ahmad Fauzi</td>
+                                <td class="p-4 text-slate-600">Pencurian Laptop</td>
+                                <td class="p-4"><div class="w-24 bg-slate-100 rounded-full h-1.5"><div class="bg-emerald-500 h-1.5 rounded-full" style="width: 100%"></div></div></td>
+                                <td class="p-4"><span class="bg-emerald-100 text-emerald-700 px-2 py-1 rounded text-xs font-bold">Selesai</span></td>
+                                <td class="p-4 text-slate-500 text-xs">10 Jul, 14:20</td>
+                                <td class="p-4 pr-6 font-extrabold text-slate-900">88</td>
+                            </tr>
+                            <tr class="hover:bg-slate-50">
+                                <td class="p-4 pl-6 text-slate-900 font-bold">Citra Kirana</td>
+                                <td class="p-4 text-slate-600">Pencurian Laptop</td>
+                                <td class="p-4"><div class="w-24 bg-slate-100 rounded-full h-1.5"><div class="bg-amber-500 h-1.5 rounded-full" style="width: 60%"></div></div></td>
+                                <td class="p-4"><span class="bg-amber-100 text-amber-700 px-2 py-1 rounded text-xs font-bold">Proses</span></td>
+                                <td class="p-4 text-slate-400 text-xs">-</td>
+                                <td class="p-4 pr-6 text-slate-400">-</td>
+                            </tr>
+                            <tr class="hover:bg-slate-50">
+                                <td class="p-4 pl-6 text-slate-900 font-bold">Najma Aulia</td>
+                                <td class="p-4 text-slate-600">Pencurian Laptop</td>
+                                <td class="p-4"><div class="w-24 bg-slate-100 rounded-full h-1.5"><div class="bg-emerald-500 h-1.5 rounded-full" style="width: 100%"></div></div></td>
+                                <td class="p-4"><span class="bg-emerald-100 text-emerald-700 px-2 py-1 rounded text-xs font-bold">Selesai</span></td>
+                                <td class="p-4 text-slate-500 text-xs">11 Jul, 09:15</td>
+                                <td class="p-4 pr-6 font-extrabold text-brand-500">92</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- TAB 5: HASIL BELAJAR -->
+            <div id="tab-hasil" class="class-tab-content hidden space-y-6">
+                <!-- Summary & Radar Chart -->
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <div class="lg:col-span-1 space-y-6">
+                        <div class="bg-white border border-slate-200 rounded-3xl p-6 shadow-sm">
+                            <h3 class="font-bold text-slate-900 mb-4">Ringkasan Nilai</h3>
+                            <div class="space-y-4">
+                                <div class="flex justify-between items-center pb-3 border-b border-slate-100">
+                                    <span class="text-sm font-medium text-slate-500">Rata-rata Nilai Kelas</span>
+                                    <span class="text-2xl font-extrabold text-slate-900">84</span>
+                                </div>
+                                <div class="flex justify-between items-center pb-3 border-b border-slate-100">
+                                    <span class="text-sm font-medium text-slate-500">Nilai Tertinggi</span>
+                                    <span class="text-lg font-bold text-emerald-600">96</span>
+                                </div>
+                                <div class="flex justify-between items-center">
+                                    <span class="text-sm font-medium text-slate-500">Mahasiswa Perlu Perhatian</span>
+                                    <span class="text-lg font-bold text-brand-500">5</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="lg:col-span-2 bg-white border border-slate-200 rounded-3xl p-6 shadow-sm flex flex-col md:flex-row items-center gap-8">
+                        <div class="w-full md:w-1/2 aspect-square max-h-64 relative flex justify-center">
+                            <canvas id="chartRadar"></canvas>
+                        </div>
+                        <div class="w-full md:w-1/2 space-y-4">
+                            <h3 class="font-bold text-slate-900">Analisis Kompetensi AI</h3>
+                            <p class="text-sm text-slate-500 leading-relaxed">
+                                Kelas secara umum sangat kuat dalam <strong class="text-slate-800">Evidence Assessment</strong>, namun sistem mendeteksi kelemahan dalam <strong class="text-brand-500">Investigative Report Writing</strong>. Disarankan memberikan kasus yang fokus pada penyusunan laporan.
+                            </p>
+                            <button class="px-4 py-2 border-2 border-slate-200 rounded-xl text-sm font-bold text-slate-700 hover:border-brand-500 transition-colors flex items-center gap-2">
+                                <i class="ph-bold ph-download-simple"></i> Download Laporan Kelas PDF
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Detail Table Matrix -->
+                <div class="bg-white border border-slate-200 rounded-3xl shadow-sm overflow-hidden">
+                    <div class="p-6 border-b border-slate-100">
+                        <h3 class="font-bold text-slate-900">Matriks Hasil Mahasiswa</h3>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse min-w-max">
+                            <thead>
+                                <tr class="bg-slate-50 border-b border-slate-200 text-[10px] font-bold text-slate-500 uppercase tracking-wider text-center">
+                                    <th class="p-4 pl-6 text-left">Nama Mahasiswa</th>
+                                    <th class="p-4 w-24">Evidence</th>
+                                    <th class="p-4 w-24">Info Gath.</th>
+                                    <th class="p-4 w-24">Analysis</th>
+                                    <th class="p-4 w-24">Decision</th>
+                                    <th class="p-4 w-24">Report</th>
+                                    <th class="p-4 w-24 bg-brand-50 text-brand-700">Total</th>
+                                    <th class="p-4 pr-6 text-right">Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-slate-100 text-sm font-medium text-center">
+                                <tr class="hover:bg-slate-50 transition-colors">
+                                    <td class="p-4 pl-6 text-left text-slate-900 font-bold">Ahmad Fauzi</td>
+                                    <td class="p-4 text-emerald-600">88</td>
+                                    <td class="p-4 text-slate-700">84</td>
+                                    <td class="p-4 text-emerald-600">90</td>
+                                    <td class="p-4 text-slate-700">86</td>
+                                    <td class="p-4 text-slate-700">80</td>
+                                    <td class="p-4 bg-brand-50/50 font-extrabold text-slate-900">86</td>
+                                    <td class="p-4 pr-6 text-right">
+                                        <button onclick="openStudentModal()" class="text-xs font-bold text-brand-500 hover:text-brand-700 flex items-center gap-1 justify-end w-full">
+                                            Detail <i class="ph-bold ph-arrow-right"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                                <tr class="hover:bg-slate-50 transition-colors">
+                                    <td class="p-4 pl-6 text-left text-slate-900 font-bold">Citra Kirana</td>
+                                    <td class="p-4 text-brand-500">72</td>
+                                    <td class="p-4 text-brand-500">70</td>
+                                    <td class="p-4 text-slate-700">76</td>
+                                    <td class="p-4 text-slate-700">74</td>
+                                    <td class="p-4 text-brand-500">68</td>
+                                    <td class="p-4 bg-brand-50/50 font-extrabold text-slate-900">72</td>
+                                    <td class="p-4 pr-6 text-right">
+                                        <button class="text-xs font-bold text-brand-500 hover:text-brand-700 flex items-center gap-1 justify-end w-full">
+                                            Detail <i class="ph-bold ph-arrow-right"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                                <tr class="hover:bg-slate-50 transition-colors">
+                                    <td class="p-4 pl-6 text-left text-slate-900 font-bold">Najma Aulia</td>
+                                    <td class="p-4 text-emerald-600">94</td>
+                                    <td class="p-4 text-emerald-600">90</td>
+                                    <td class="p-4 text-emerald-600">92</td>
+                                    <td class="p-4 text-emerald-600">95</td>
+                                    <td class="p-4 text-emerald-600">89</td>
+                                    <td class="p-4 bg-brand-50/50 font-extrabold text-slate-900">92</td>
+                                    <td class="p-4 pr-6 text-right">
+                                        <button class="text-xs font-bold text-brand-500 hover:text-brand-700 flex items-center gap-1 justify-end w-full">
+                                            Detail <i class="ph-bold ph-arrow-right"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- MODAL: STUDENT DETAIL -->
+    <div id="modal-student" class="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-sm hidden items-center justify-center p-4">
+        <div class="bg-white rounded-[32px] w-full max-w-4xl max-h-[90vh] flex flex-col shadow-2xl animate-fadeIn overflow-hidden">
+            <!-- Modal Header -->
+            <div class="px-8 py-6 border-b border-slate-100 flex justify-between items-start bg-slate-50">
+                <div>
+                    <div class="flex items-center gap-3 mb-2">
+                        <img src="https://ui-avatars.com/api/?name=Ahmad+Fauzi&background=f1f5f9&color=475569" class="w-12 h-12 rounded-full border-2 border-white shadow-sm">
+                        <div>
+                            <h2 class="text-xl font-bold text-slate-900">Ahmad Fauzi</h2>
+                            <p class="text-sm text-slate-500 font-medium">Kasus: Pencurian Laptop di Ruang Kelas</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="flex items-center gap-4">
+                    <div class="text-right">
+                        <div class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Nilai Total AI</div>
+                        <div class="text-3xl font-extrabold text-brand-500">86</div>
+                    </div>
+                    <button onclick="closeStudentModal()" class="w-10 h-10 rounded-full bg-white border border-slate-200 text-slate-500 hover:text-slate-900 hover:bg-slate-100 flex items-center justify-center transition-colors">
+                        <i class="ph-bold ph-x text-lg"></i>
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Modal Body (Scrollable) -->
+            <div class="p-8 overflow-y-auto custom-scrollbar space-y-8 flex-1">
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <!-- Left: Submissions -->
+                    <div class="space-y-6">
+                        <div>
+                            <h4 class="text-sm font-bold text-slate-900 mb-3 flex items-center gap-2"><i class="ph-fill ph-magnifying-glass text-brand-500"></i> Bukti yang Dipilih</h4>
+                            <div class="flex gap-2">
+                                <span class="bg-slate-100 text-slate-700 px-3 py-1.5 rounded-lg text-sm font-medium border border-slate-200">Rekaman CCTV</span>
+                                <span class="bg-slate-100 text-slate-700 px-3 py-1.5 rounded-lg text-sm font-medium border border-slate-200">Keterangan Saksi 1</span>
+                            </div>
+                        </div>
+
+                        <div>
+                            <h4 class="text-sm font-bold text-slate-900 mb-3 flex items-center gap-2"><i class="ph-fill ph-lightbulb text-amber-500"></i> Hipotesis Mahasiswa</h4>
+                            <div class="bg-slate-50 p-4 rounded-2xl border border-slate-100 text-sm text-slate-700 leading-relaxed font-medium">
+                                "Berdasarkan blind spot pada CCTV antara pukul 10:00 - 10:15, pelaku kemungkinan besar mengetahui letak kamera. Keterangan Saksi 1 tentang petugas kebersihan yang meminjam kunci kelas memperkuat dugaan keterlibatan pihak internal."
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Right: AI Evaluation -->
+                    <div class="bg-slate-50 rounded-2xl p-6 border border-slate-100">
+                        <h4 class="text-sm font-bold text-slate-900 mb-4 flex items-center gap-2"><i class="ph-fill ph-robot text-indigo-500"></i> Evaluasi AI</h4>
+                        <div class="space-y-3">
+                            <div class="flex items-start gap-3">
+                                <i class="ph-fill ph-check-circle text-emerald-500 mt-0.5"></i>
+                                <p class="text-xs text-slate-600 font-medium"><strong class="text-slate-800">Kekuatan:</strong> Mahasiswa berhasil menghubungkan bukti rekaman dengan alibi saksi secara logis.</p>
+                            </div>
+                            <div class="flex items-start gap-3">
+                                <i class="ph-fill ph-warning-circle text-brand-500 mt-0.5"></i>
+                                <p class="text-xs text-slate-600 font-medium"><strong class="text-slate-800">Kelemahan:</strong> Laporan kurang menyebutkan detail spesifik mengenai timeline kejadian. Penulisan laporan (Report Writing) butuh perbaikan terstruktur.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Dosen Notes -->
+                <div>
+                    <h4 class="text-sm font-bold text-slate-900 mb-3">Catatan Dosen (Feedback Manual)</h4>
+                    <textarea class="w-full bg-white border border-slate-200 rounded-2xl p-4 text-sm focus:outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500 resize-none h-24" placeholder="Ketik umpan balik tambahan di sini..."></textarea>
+                </div>
+            </div>
+            
+            <!-- Modal Footer -->
+            <div class="px-8 py-5 border-t border-slate-100 bg-white flex justify-end gap-3">
+                <button class="px-5 py-2.5 rounded-xl border border-slate-200 text-slate-700 font-bold hover:bg-slate-50">Download PDF</button>
+                <button onclick="closeStudentModal()" class="px-6 py-2.5 rounded-xl bg-brand-500 hover:bg-brand-600 text-white font-bold shadow-md shadow-brand-500/20">Simpan & Kirim Feedback</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Setup Stepper Data
+        const steps = [
+            { id: 0, title: "Input Source" },
+            { id: 1, title: "Vision Analysis" },
+            { id: 2, title: "Configuration" },
+            { id: 3, title: "Generate Case" }
+        ];
+        
+        let currentStep = 0;
+
+        function updateStepper() {
+            const container = document.getElementById('stepper-container');
+            let html = '';
+            
+            steps.forEach((step, index) => {
+                const isActive = index === currentStep;
+                const isPast = index < currentStep;
+                
+                let circleClasses = "w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm border-2 transition-colors duration-300 step-circle ";
+                let textClasses = "absolute -bottom-6 whitespace-nowrap text-xs transition-colors duration-300 step-text ";
+                let lineClasses = "absolute top-1/2 -translate-y-1/2 left-full w-[calc(100%+3rem)] md:w-[calc(100%+5rem)] h-[2px] transition-colors duration-300 ";
+
+                if (isActive) {
+                    circleClasses += "bg-brand-500 border-brand-500 text-white shadow-md";
+                    textClasses += "text-slate-900 font-bold";
+                } else if (isPast) {
+                    circleClasses += "bg-white border-brand-500 text-brand-500";
+                    textClasses += "text-slate-500 font-semibold";
+                    lineClasses += "bg-brand-200"; // Past line
+                } else {
+                    circleClasses += "bg-white border-slate-200 text-slate-400";
+                    textClasses += "text-slate-400 font-medium";
+                    lineClasses += "bg-slate-100"; // Future line
+                }
+
+                const icon = isPast ? '<i class="ph-bold ph-check"></i>' : (index + 1);
+
+                html += `
+                    <div class="relative flex flex-col items-center stepper-item ${isActive ? 'active' : ''}">
+                        <div class="${circleClasses}">${icon}</div>
+                        <span class="${textClasses}">${step.title}</span>
+                        ${index < steps.length - 1 ? `<div class="${lineClasses} -z-10"></div>` : ''}
+                    </div>
+                `;
+            });
+            
+            container.innerHTML = html;
+        }
+
+        // Logic routing sidebar vs composer flow
+        function switchSidebar(menu) {
+            document.querySelectorAll('.nav-item').forEach(el => {
+                el.classList.remove('bg-white/15', 'text-white', 'font-bold');
+                el.classList.add('text-white/80');
+            });
+            document.getElementById('nav-' + menu).classList.add('bg-white/15', 'text-white', 'font-bold');
+            document.getElementById('nav-' + menu).classList.remove('text-white/80');
+
+            if (menu === 'dashboard') {
+                document.getElementById('composer-stepper').classList.add('hidden');
+                switchView('dashboard');
+            } else if (menu === 'composer') {
+                document.getElementById('composer-stepper').classList.remove('hidden');
+                currentStep = 0;
+                updateStepper();
+                switchView('source');
+            } else if (menu === 'class') {
+                document.getElementById('composer-stepper').classList.add('hidden');
+                switchView('class-list');
+            }
+        }
+
+        function switchView(viewId) {
+            document.querySelectorAll('.step-view').forEach(el => el.classList.remove('active'));
+            document.getElementById('view-' + viewId).classList.add('active');
+            document.querySelector('main').scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function changeStep(stepIndex) {
+            currentStep = stepIndex;
+            updateStepper();
+            const viewMap = ['source', 'analyze', 'config', 'result'];
+            switchView(viewMap[stepIndex]);
+        }
+
+        // Simulate multi-file upload
+        function simulateUpload() {
+            const progress = document.getElementById('upload-progress');
+            const fileList = document.getElementById('file-list');
+            const status = document.getElementById('upload-status');
+            
+            progress.classList.remove('hidden');
+            fileList.innerHTML = '';
+            status.innerText = "Mengunggah 3 foto ruangan...";
+            
+            const files = ['IMG_SudutKiri.jpg', 'IMG_Tengah.jpg', 'IMG_SudutKanan.jpg'];
+            
+            files.forEach((file, index) => {
+                setTimeout(() => {
+                    const item = document.createElement('div');
+                    item.className = 'flex items-center justify-between bg-slate-50 p-2.5 rounded-lg text-xs font-mono border border-slate-200 animate-fadeIn';
+                    item.innerHTML = `<span class="text-slate-600 font-bold">${file}</span> <i class="ph-fill ph-check-circle text-green-500 text-lg"></i>`;
+                    fileList.appendChild(item);
+                }, index * 600);
+            });
+
+            setTimeout(() => {
+                status.innerText = "Selesai. Memulai AI Mapping...";
+                setTimeout(() => {
+                    progress.classList.add('hidden');
+                    startScanning();
+                }, 1000);
+            }, files.length * 600 + 500);
+        }
+
+        function startScanning() {
+            changeStep(1); // Go to Analyze step
+            
+            const logsContainer = document.getElementById('ai-logs');
+            const textEl = document.getElementById('loading-text');
+            
+            logsContainer.innerHTML = '<div class="text-slate-400">Inisialisasi Algoritma Photogrammetry...</div>';
+            
+            const events = [
+                { time: 800, text: "> Menyatukan titik koordinat dari 3 sudut foto..." },
+                { time: 1800, text: "> Mendeteksi Objek: Meja (Conf: 98%), Kursi (Conf: 95%)" },
+                { time: 2800, text: "> Menganalisis blind-spot CCTV di area tengah..." },
+                { time: 3800, text: "> Peta 3D selesai. Menyiapkan konteks untuk Generative AI." }
+            ];
+
+            let totalTime = 0;
+            events.forEach(event => {
+                setTimeout(() => {
+                    const logEl = document.createElement('div');
+                    logEl.className = 'text-slate-700 font-bold animate-fadeIn';
+                    logEl.innerText = event.text;
+                    logsContainer.appendChild(logEl);
+                    logsContainer.scrollTop = logsContainer.scrollHeight;
+                }, event.time);
+                totalTime = Math.max(totalTime, event.time);
+            });
+
+            setTimeout(() => {
+                textEl.innerText = "Analisis selesai.";
+                setTimeout(() => changeStep(2), 1000); // Go to Config step
+            }, totalTime + 1000);
+        }
+
+        function generateCase(e) {
+            const btn = e.currentTarget;
+            const originalHTML = btn.innerHTML;
+            btn.innerHTML = '<i class="ph ph-spinner animate-spin text-xl"></i> Merangkai Kasus...';
+            btn.disabled = true;
+
+            setTimeout(() => {
+                btn.innerHTML = originalHTML;
+                btn.disabled = false;
+                changeStep(3); // Go to result step
+            }, 2000);
+        }
+
+        // --- NEW LOGIC FOR CLASS MANAGEMENT ---
+
+        let chartsInitialized = false;
+
+        function openClassDetail(classId) {
+            switchView('class-detail');
+            switchClassTab('overview'); // Default tab
+            
+            // Initialize charts if not already done to prevent canvas reuse error
+            if(!chartsInitialized) {
+                setTimeout(() => {
+                    initCharts();
+                    chartsInitialized = true;
+                }, 300); // Slight delay for rendering
+            }
+        }
+
+        function switchClassTab(tabId) {
+            // Hide all tab content
+            document.querySelectorAll('.class-tab-content').forEach(el => {
+                el.classList.add('hidden');
+                el.classList.remove('block', 'animate-fadeIn');
+            });
+            
+            // Reset tab button styles
+            document.querySelectorAll('.tab-btn').forEach(el => {
+                el.classList.remove('text-brand-500', 'border-brand-500');
+                el.classList.add('text-slate-500', 'border-transparent');
+            });
+
+            // Show active tab content
+            const content = document.getElementById('tab-' + tabId);
+            content.classList.remove('hidden');
+            content.classList.add('block', 'animate-fadeIn');
+
+            // Style active tab button
+            const btn = document.getElementById('tab-btn-' + tabId);
+            btn.classList.remove('text-slate-500', 'border-transparent');
+            btn.classList.add('text-brand-500', 'border-brand-500');
+        }
+
+        function openStudentModal() {
+            document.getElementById('modal-student').classList.remove('hidden');
+            document.getElementById('modal-student').classList.add('flex');
+        }
+
+        function closeStudentModal() {
+            document.getElementById('modal-student').classList.add('hidden');
+            document.getElementById('modal-student').classList.remove('flex');
+        }
+
+        // Chart.js Initialization
+        function initCharts() {
+            // 1. Doughnut Chart (Progress)
+            const ctxProgress = document.getElementById('chartProgress');
+            if(ctxProgress) {
+                new Chart(ctxProgress, {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['Selesai', 'Proses', 'Belum Mulai'],
+                        datasets: [{
+                            data: [78, 15, 7],
+                            backgroundColor: ['#D62828', '#F59E0B', '#E2E8F0'],
+                            borderWidth: 0,
+                            hoverOffset: 4
+                        }]
+                    },
+                    options: {
+                        cutout: '75%',
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { display: false },
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) { return ' ' + context.label + ': ' + context.parsed + '%'; }
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+
+            // 2. Radar Chart (Competency)
+            const ctxRadar = document.getElementById('chartRadar');
+            if(ctxRadar) {
+                new Chart(ctxRadar, {
+                    type: 'radar',
+                    data: {
+                        labels: ['Evidence Ass.', 'Info Gather', 'Case Analysis', 'Hypothesis', 'Decision Mk.', 'Report Writing'],
+                        datasets: [{
+                            label: 'Rata-rata Kelas',
+                            data: [88, 79, 85, 84, 82, 72],
+                            fill: true,
+                            backgroundColor: 'rgba(214, 40, 40, 0.2)',
+                            borderColor: '#D62828',
+                            pointBackgroundColor: '#D62828',
+                            pointBorderColor: '#fff',
+                            pointHoverBackgroundColor: '#fff',
+                            pointHoverBorderColor: '#D62828'
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            r: {
+                                angleLines: { color: 'rgba(0,0,0,0.05)' },
+                                grid: { color: 'rgba(0,0,0,0.05)' },
+                                pointLabels: { font: { family: "'Plus Jakarta Sans', sans-serif", size: 10, weight: 'bold' }, color: '#64748b' },
+                                ticks: { display: false, min: 0, max: 100 }
+                            }
+                        },
+                        plugins: { legend: { display: false } }
+                    }
+                });
+            }
+        }
+
+        // Init
+        switchSidebar('dashboard');
+    </script>
+</body>
+</html>

@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VeritasLab - Student Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['"Plus Jakarta Sans"', 'sans-serif'] },
+                    colors: {
+                        brand: {
+                            500: '#D62828', // Primary Red
+                            600: '#B92020',
+                            700: '#9B1919',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { background-color: #D62828; }
+        
+        /* Clean Custom Scrollbar */
+        .main-scroll::-webkit-scrollbar { width: 6px; }
+        .main-scroll::-webkit-scrollbar-track { background: transparent; }
+        .main-scroll::-webkit-scrollbar-thumb { background: #E2E8F0; border-radius: 10px; }
+        .main-scroll::-webkit-scrollbar-thumb:hover { background: #CBD5E1; }
+    </style>
+</head>
+<body class="h-screen w-screen overflow-hidden flex p-4 gap- text-slate-800 font-sans antialiased">
+
+    <!-- ================= SIDEBAR ================= -->
+    <aside class="w-[260px] shrink-0 flex flex-col justify-between text-white pb-2 pt-4">
+        <div>
+            <!-- User Profile -->
+            <div class="flex items-center gap-3 mb-10 px-4">
+                <div class="w-12 h-12 bg-white rounded-xl text-brand-500 flex items-center justify-center font-extrabold text-lg shadow-sm">
+                    AS
+                </div>
+                <div>
+                    <div class="font-bold text-lg leading-tight">Ahmad S.</div>
+                    <div class="text-[11px] text-white/80 font-bold tracking-wide mt-0.5">240101992</div>
+                </div>
+            </div>
+
+            <!-- Navigation -->
+            <nav class="space-y-2 px-2">
+                <!-- Active Menu -->
+                <button class="w-full text-left px-4 py-3.5 rounded-xl bg-white/20 font-bold text-white flex items-center gap-3 transition-colors">
+                    <i class="ph-bold ph-squares-four text-xl"></i> Dashboard
+                </button>
+                <!-- Inactive Menus -->
+                <button class="w-full text-left px-4 py-3.5 rounded-xl hover:bg-white/10 text-white/80 hover:text-white font-medium flex items-center gap-3 transition-colors">
+                    <i class="ph-bold ph-folder-open text-xl"></i> Kasus Saya
+                </button>
+                <button class="w-full text-left px-4 py-3.5 rounded-xl hover:bg-white/10 text-white/80 hover:text-white font-medium flex items-center gap-3 transition-colors">
+                    <i class="ph-bold ph-books text-xl"></i> Modul Belajar
+                </button>
+               
+            </nav>
+        </div>
+
+        <div class="px-4 text-center text-xs font-bold text-white/50 pb-4">
+            VeritasLab Student v1.0
+        </div>
+    </aside>
+
+    <!-- ================= MAIN CONTENT (DASHBOARD) ================= -->
+    <main class="flex-1 bg-white rounded-[2rem] flex flex-col overflow-hidden shadow-2xl relative">
+        
+        <!-- Header area with floating logo -->
+        <div class="absolute top-8 right-10 text-xl font-extrabold flex items-center gap-2 text-slate-800 z-10 hidden md:flex">
+            <i class="ph-fill ph-fingerprint text-brand-500 text-2xl"></i> Veritas<span class="text-brand-500">Lab</span>
+        </div>
+
+        <!-- Scrollable Dashboard Content -->
+        <div class="flex-1 overflow-y-auto px-6 md:px-10 pt-10 pb-10 main-scroll">
+            
+            <!-- Welcome Message -->
+            <div class="mb-8">
+                <h1 class="text-3xl font-bold mb-1 text-slate-900">Selamat datang, Ahmad!</h1>
+                <p class="text-slate-500 font-medium text-sm md:text-base">Terus asah insting investigasimu. Ini ringkasan progres belajarmu saat ini.</p>
+            </div>
+
+            <!-- Stats Grid -->
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+                <div class="border border-slate-200 rounded-2xl p-5 bg-white shadow-sm hover:border-slate-300 transition-colors">
+                    <div class="text-xs font-bold text-slate-500 uppercase tracking-wide mb-1">Kasus Aktif</div>
+                    <div class="text-3xl font-extrabold text-brand-600">2</div>
+                </div>
+                <div class="border border-slate-200 rounded-2xl p-5 bg-white shadow-sm hover:border-slate-300 transition-colors">
+                    <div class="text-xs font-bold text-slate-500 uppercase tracking-wide mb-1">Kasus Selesai</div>
+                    <div class="text-3xl font-extrabold text-emerald-600">5</div>
+                </div>
+                <div class="border border-slate-200 rounded-2xl p-5 bg-white shadow-sm hover:border-slate-300 transition-colors">
+                    <div class="text-xs font-bold text-slate-500 uppercase tracking-wide mb-1">Rata-rata Nilai</div>
+                    <div class="text-3xl font-extrabold text-slate-900">86<span class="text-lg text-slate-400">/100</span></div>
+                </div>
+                <div class="border border-amber-200 rounded-2xl p-5 bg-amber-50 shadow-sm">
+                    <div class="text-xs font-bold text-amber-700 uppercase tracking-wide mb-1">Deadline Terdekat</div>
+                    <div class="text-2xl font-extrabold text-amber-900 mt-1">2 Hari Lagi</div>
+                </div>
+            </div>
+
+            <!-- Global Progress Bar -->
+            <div class="bg-slate-50 border border-slate-100 rounded-2xl p-6 mb-8 shadow-sm">
+                <div class="flex justify-between items-end mb-3">
+                    <div class="font-bold text-slate-800">Progress Pembelajaran Semester</div>
+                    <div class="text-2xl font-extrabold text-slate-900">65%</div>
+                </div>
+                <div class="w-full bg-slate-200 rounded-full h-2.5 overflow-hidden">
+                    <div class="bg-brand-500 h-2.5 rounded-full" style="width: 65%"></div>
+                </div>
+            </div>
+
+            <!-- Two Column Layout for Tasks and Modules -->
+            <div class="grid grid-cols-1 xl:grid-cols-2 gap-8">
+                
+                <!-- Left Column: Active Cases -->
+                <div>
+                    <div class="flex justify-between items-end mb-4">
+                        <h3 class="font-bold text-xl text-slate-900">Tugas Kasus Saat Ini</h3>
+                        <button class="text-sm font-bold text-brand-500 hover:text-brand-600 transition-colors">Lihat Semua</button>
+                    </div>
+                    
+                    <div class="space-y-4">
+                        <!-- Task Item 1 -->
+                        <div class="border border-slate-200 rounded-2xl p-5 bg-white hover:shadow-md hover:border-brand-300 transition-all cursor-pointer group">
+                            <div class="flex justify-between items-center mb-3">
+                                <span class="bg-slate-100 text-slate-600 text-[10px] font-extrabold px-2.5 py-1 rounded uppercase tracking-wide">Investigasi TKP</span>
+                                <span class="text-xs font-bold text-slate-400 flex items-center gap-1"><i class="ph-fill ph-clock text-amber-500"></i> 20 Juli</span>
+                            </div>
+                            <h4 class="font-bold text-slate-900 text-lg mb-4 group-hover:text-brand-600 transition-colors">Pencurian Laptop Ruang Kelas</h4>
+                            <div class="flex items-center gap-2 pt-4 border-t border-slate-100">
+                                <div class="w-2.5 h-2.5 rounded-full bg-slate-300"></div>
+                                <span class="text-xs font-bold text-slate-500">Belum Dikerjakan</span>
+                            </div>
+                        </div>
+
+                        <!-- Task Item 2 -->
+                        <div class="border border-slate-200 rounded-2xl p-5 bg-white hover:shadow-md hover:border-brand-300 transition-all cursor-pointer group">
+                            <div class="flex justify-between items-center mb-3">
+                                <span class="bg-indigo-50 text-indigo-600 text-[10px] font-extrabold px-2.5 py-1 rounded uppercase tracking-wide">Crime Intelligence</span>
+                                <span class="text-xs font-bold text-slate-400 flex items-center gap-1"><i class="ph-fill ph-clock text-amber-500"></i> 25 Juli</span>
+                            </div>
+                            <h4 class="font-bold text-slate-900 text-lg mb-4 group-hover:text-brand-600 transition-colors">Analisis Pola Pencurian Kampus</h4>
+                            <div class="flex items-center gap-2 pt-4 border-t border-slate-100">
+                                <div class="w-2.5 h-2.5 rounded-full bg-amber-500 animate-pulse shadow-[0_0_8px_rgba(245,158,11,0.6)]"></div>
+                                <span class="text-xs font-bold text-amber-600">Sedang Dikerjakan (40%)</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right Column: Recommended Modules -->
+                <div>
+                    <h3 class="font-bold text-xl text-slate-900 mb-4">Rekomendasi Modul Pembelajaran</h3>
+                    
+                    <div class="space-y-3">
+                        <!-- Module Item 1 -->
+                        <div class="border border-slate-100 rounded-2xl p-4 bg-white hover:bg-slate-50 transition-colors flex items-center gap-4 cursor-pointer">
+                            <div class="w-12 h-12 bg-blue-50 text-blue-500 rounded-xl flex items-center justify-center text-2xl shrink-0"><i class="ph-fill ph-video-camera"></i></div>
+                            <div>
+                                <h4 class="font-bold text-slate-900 text-base">Dasar Investigasi TKP</h4>
+                                <p class="text-xs text-slate-500 font-medium mt-0.5">Video • 15 Menit</p>
+                            </div>
+                            <i class="ph-bold ph-caret-right text-slate-300 ml-auto"></i>
+                        </div>
+                        
+                        <!-- Module Item 2 -->
+                        <div class="border border-slate-100 rounded-2xl p-4 bg-white hover:bg-slate-50 transition-colors flex items-center gap-4 cursor-pointer">
+                            <div class="w-12 h-12 bg-amber-50 text-amber-500 rounded-xl flex items-center justify-center text-2xl shrink-0"><i class="ph-fill ph-article"></i></div>
+                            <div>
+                                <h4 class="font-bold text-slate-900 text-base">Chain of Custody</h4>
+                                <p class="text-xs text-slate-500 font-medium mt-0.5">Artikel • 25 Menit</p>
+                            </div>
+                            <i class="ph-bold ph-caret-right text-slate-300 ml-auto"></i>
+                        </div>
+                        
+                        <!-- Module Item 3 -->
+                        <div class="border border-slate-100 rounded-2xl p-4 bg-white hover:bg-slate-50 transition-colors flex items-center gap-4 cursor-pointer">
+                            <div class="w-12 h-12 bg-brand-50 text-brand-500 rounded-xl flex items-center justify-center text-2xl shrink-0"><i class="ph-fill ph-file-pdf"></i></div>
+                            <div>
+                                <h4 class="font-bold text-slate-900 text-base">Analisis Barang Bukti Digital</h4>
+                                <p class="text-xs text-slate-500 font-medium mt-0.5">PDF • 30 Menit</p>
+                            </div>
+                            <i class="ph-bold ph-caret-right text-slate-300 ml-auto"></i>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+    </main>
+
+</body>
+</html>
