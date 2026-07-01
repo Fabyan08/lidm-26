@@ -1,0 +1,551 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VeritasLab - Crime Intelligence Composer</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    
+    <!-- Leaflet for Map Preview -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://unpkg.com/leaflet.heat@0.2.0/dist/leaflet-heat.js"></script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['"Plus Jakarta Sans"', 'sans-serif'] },
+                    colors: {
+                        brand: {
+                            50: '#fdf3f3', 100: '#fbe5e5', 500: '#D62828', 600: '#B92020', 700: '#9B1919',
+                        }
+                    },
+                    animation: {
+                        'scan': 'scan 2.5s cubic-bezier(0.4, 0, 0.2, 1) infinite',
+                    },
+                    keyframes: {
+                        scan: {
+                            '0%, 100%': { transform: 'translateY(0)', opacity: '0' },
+                            '10%, 90%': { opacity: '1' },
+                            '50%': { transform: 'translateY(100%)' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <style>
+        /* FULL BACKGROUND RED as per reference image */
+        body { background-color: #D62828; }
+        
+        /* STRICT VIEW CONTROL TO PREVENT OVERLAP */
+        .step-view:not(.active) { display: none !important; }
+        .step-view.active { display: block; animation: fadeIn 0.4s ease-out forwards; }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #CBD5E1; border-radius: 10px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #94A3B8; }
+        
+        /* Checkbox styling */
+        .checkbox-pill input:checked + div {
+            background-color: #fdf3f3; border-color: #D62828; color: #D62828;
+        }
+    </style>
+</head>
+<body class="flex h-screen w-screen overflow-hidden text-slate-800 antialiased font-sans p-4 gap-4">
+
+    <!-- ================= SIDEBAR (Integrated into Red Background) ================= -->
+    <aside class="w-[260px] shrink-0 flex flex-col justify-between text-white pb-2 pt-4 pl-2">
+        <div>
+            <!-- User Profile (Aligned with reference) -->
+            <div class="flex items-center gap-3 mb-10 cursor-pointer hover:bg-white/5 p-2 rounded-xl transition-colors">
+                <div class="relative">
+                    <div class="w-12 h-12 bg-white text-brand-500 rounded-xl flex items-center justify-center font-extrabold text-xl shadow-sm">PH</div>
+                    <div class="absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full border-2 border-brand-500 flex items-center justify-center text-[8px] font-bold">4</div>
+                </div>
+                <div>
+                    <div class="font-bold text-lg leading-tight">Prof. Hendra</div>
+                    <div class="text-[11px] text-white/80 font-bold tracking-wide mt-0.5">hendra@veritas.edu</div>
+                </div>
+            </div>
+
+            <!-- Navigation -->
+            <nav class="space-y-1 pr-2">
+                <button class="w-full text-left px-5 py-3.5 rounded-xl hover:bg-white/10 transition-colors font-medium">Dashboard</button>
+                <!-- Active State matching reference (lighter red/pinkish block) -->
+                <button class="w-full text-left px-5 py-3.5 rounded-xl bg-white/20 font-bold transition-colors shadow-sm">Penyusun Kasus</button>
+                <button class="w-full text-left px-5 py-3.5 rounded-xl hover:bg-white/10 transition-colors font-medium">Manajemen Kelas</button>
+                <button class="w-full text-left px-5 py-3.5 rounded-xl hover:bg-white/10 transition-colors font-medium">Manajemen Kasus</button>
+                <button class="w-full text-left px-5 py-3.5 rounded-xl hover:bg-white/10 transition-colors font-medium">Modul Belajar</button>
+            </nav>
+        </div>
+        
+        <!-- Optional: Quota info at bottom if needed, omitted to match reference strictly -->
+    </aside>
+
+    <!-- ================= MAIN CONTENT (WHITE ROUNDED CONTAINER) ================= -->
+    <main class="flex-1 bg-white rounded-[2rem] flex flex-col overflow-hidden shadow-2xl relative">
+        
+        <!-- GLOBAL HEADER & STEPPER (Inside the white block) -->
+        <header class="px-10 pt-10 pb-6 flex items-start justify-between shrink-0 z-10 border-b border-slate-100">
+            <div class="flex-1">
+                <h1 class="text-[28px] font-bold text-slate-900 leading-tight mb-2">Crime Intelligence Composer</h1>
+                <p class="text-[15px] text-slate-500 font-medium">Buat tantangan analisis kriminologi dari data prediktif.</p>
+                
+                <!-- Progress Stepper -->
+                <div class="flex items-center gap-2 mt-6" id="stepper-container">
+                    <!-- Populated by JS -->
+                </div>
+            </div>
+            
+            <!-- Logo inside main content (matching reference) -->
+            <div class="flex items-center gap-4 shrink-0">
+                <div class="text-xl font-extrabold flex items-center gap-2 text-slate-800">
+                    <i class="ph-fill ph-fingerprint text-brand-500 text-2xl"></i> Veritas<span class="text-brand-500">Lab</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- SCROLLABLE VIEWS AREA -->
+        <div class="flex-1 overflow-y-auto p-10 custom-scrollbar relative">
+
+            <!-- ================= STEP 1: PARAMETER DATA ================= -->
+            <div id="view-step-1" class="step-view active max-w-4xl mx-auto">
+                <div class="mb-8">
+                    <h2 class="text-2xl font-bold text-slate-900 mb-2">Konfigurasi Dataset Historis</h2>
+                    <p class="text-slate-500 font-medium">Pilih sumber data yang akan diproses oleh AI untuk menghasilkan prediksi tren kriminalitas.</p>
+                </div>
+
+                <div class="bg-white rounded-3xl p-8 border border-slate-200 shadow-sm space-y-8">
+                    <!-- Data Selection -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="space-y-6">
+                            <div>
+                                <label class="block text-sm font-bold text-slate-700 mb-2">Sumber Dataset</label>
+                                <select class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-slate-900 font-medium focus:outline-none focus:border-brand-500 cursor-pointer appearance-none">
+                                    <option>Data Kepolisian Publik (Anonim)</option>
+                                    <option>Synthetic Crime Data (Simulasi)</option>
+                                    <option>Upload Dataset Kustom (CSV)</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-bold text-slate-700 mb-2">Wilayah Analisis</label>
+                                <select class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-slate-900 font-medium focus:outline-none focus:border-brand-500 cursor-pointer appearance-none">
+                                    <option>Provinsi Jawa Timur</option>
+                                    <option>Provinsi DKI Jakarta</option>
+                                    <option>Provinsi Jawa Barat</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-bold text-slate-700 mb-2">Jenis Tindak Pidana</label>
+                                <select class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-slate-900 font-medium focus:outline-none focus:border-brand-500 cursor-pointer appearance-none">
+                                    <option>Pencurian Kendaraan Bermotor (Curanmor)</option>
+                                    <option>Kejahatan Siber (Cyber Fraud)</option>
+                                    <option>Pencurian dengan Pemberatan (Curat)</option>
+                                    <option>Penyalahgunaan Narkotika</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="space-y-6">
+                            <div>
+                                <label class="block text-sm font-bold text-slate-700 mb-2">Rentang Waktu Historis (Training Data)</label>
+                                <div class="flex items-center gap-3">
+                                    <input type="number" value="2019" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-slate-900 font-medium text-center focus:border-brand-500">
+                                    <span class="text-slate-400 font-bold">SD</span>
+                                    <input type="number" value="2025" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-slate-900 font-medium text-center focus:border-brand-500">
+                                </div>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-bold text-slate-700 mb-2">Model AI Forecasting</label>
+                                <select class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-slate-900 font-medium focus:outline-none focus:border-brand-500 cursor-pointer appearance-none">
+                                    <option>Meta Prophet (Rekomendasi untuk Musiman)</option>
+                                    <option>ARIMA / SARIMA</option>
+                                    <option>LSTM Neural Network</option>
+                                </select>
+                            </div>
+                            <div class="bg-blue-50 border border-blue-100 p-4 rounded-xl">
+                                <div class="text-xs font-bold text-blue-700 mb-1 flex items-center gap-1"><i class="ph-fill ph-info"></i> Info Model</div>
+                                <p class="text-[11px] text-blue-800 font-medium leading-relaxed">Model Prophet sangat baik dalam mendeteksi tren musiman (seperti libur panjang/tahun ajaran baru) yang relevan dengan kasus curanmor.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="pt-6 border-t border-slate-100 flex justify-end">
+                        <button onclick="startForecasting()" class="px-8 py-3.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold shadow-lg flex items-center gap-2 transition-colors">
+                            <i class="ph-bold ph-cpu"></i> Generate Forecast AI
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ================= STEP 2: AI PROCESSING (LOADING) ================= -->
+            <div id="view-step-2" class="step-view max-w-3xl mx-auto py-10">
+                <div class="text-center mb-8">
+                    <div class="inline-flex items-center justify-center w-20 h-20 rounded-full bg-brand-50 text-brand-500 mb-6 shadow-inner relative">
+                        <i class="ph-fill ph-brain text-4xl relative z-10"></i>
+                        <div class="absolute inset-0 border-4 border-brand-500 border-t-transparent rounded-full animate-spin"></div>
+                    </div>
+                    <h2 class="text-3xl font-bold text-slate-900 mb-2">Intelligence Engine Bekerja</h2>
+                    <p class="text-brand-600 font-mono text-sm font-bold animate-pulse" id="loading-text">Memuat Dataset Historis (120.450 baris)...</p>
+                </div>
+                
+                <!-- Code/Log Simulation Box -->
+                <div class="bg-slate-900 rounded-3xl p-6 shadow-xl border border-slate-800 max-w-2xl mx-auto relative overflow-hidden h-64">
+                    <div class="absolute top-0 left-0 w-full h-[50%] bg-brand-500/10 animate-scan pointer-events-none border-b border-brand-500/50"></div>
+                    <div class="font-mono text-xs text-emerald-400 space-y-2" id="ai-logs">
+                        <!-- Logs injected here -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- ================= STEP 3: REVIEW & INTEL BRIEF ================= -->
+            <div id="view-step-3" class="step-view">
+                <div class="mb-6 flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
+                    <div>
+                        <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-50 text-emerald-600 text-xs font-bold mb-3 border border-emerald-200">
+                            <i class="ph-fill ph-check-circle"></i> Forecasting Selesai
+                        </div>
+                        <h2 class="text-3xl font-bold text-slate-900">Review Hasil & Susun Intel Brief</h2>
+                    </div>
+                    <button onclick="goToRubric()" class="px-6 py-3 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold shadow-lg flex items-center gap-2 shrink-0">
+                        Lanjut Atur Penilaian <i class="ph-bold ph-arrow-right"></i>
+                    </button>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                    
+                    <!-- Left Panel: Forecast Results & Map -->
+                    <div class="lg:col-span-5 space-y-6">
+                        <!-- Heatmap Preview using Leaflet Container -->
+                        <div class="bg-white border border-slate-200 rounded-3xl p-4 shadow-sm relative flex flex-col">
+                            <h3 class="font-bold text-slate-900 text-sm mb-3 px-2 flex items-center gap-2"><i class="ph-fill ph-map-pin text-brand-500"></i> Prediksi Hotspot 2026</h3>
+                            <!-- Map Container -->
+                            <div id="map-preview" class="w-full h-[280px] rounded-2xl border border-slate-200 z-0"></div>
+                            
+                            <div class="mt-4 px-2">
+                                <div class="flex justify-between text-xs font-bold mb-1"><span class="text-slate-600">Surabaya (Target Utama)</span><span class="text-red-600">↑ 18%</span></div>
+                                <div class="flex justify-between text-xs font-bold mb-1"><span class="text-slate-600">Malang</span><span class="text-amber-500">↑ 6%</span></div>
+                                <div class="flex justify-between text-xs font-bold mb-1"><span class="text-slate-600">Jember</span><span class="text-emerald-500">↓ 4%</span></div>
+                            </div>
+                        </div>
+                        
+                        <!-- Pattern Insights -->
+                        <div class="bg-brand-50 border border-brand-100 rounded-3xl p-6 shadow-sm">
+                            <h3 class="font-bold text-brand-900 text-sm mb-3"><i class="ph-fill ph-chart-polar"></i> Pattern Insights (Data Mahasiswa)</h3>
+                            <div class="space-y-3">
+                                <div class="bg-white p-3 rounded-xl border border-brand-100">
+                                    <div class="text-[10px] font-bold text-slate-400 uppercase">Lokasi Rawan</div>
+                                    <div class="font-bold text-slate-800 text-sm">Area Parkir (42%)</div>
+                                </div>
+                                <div class="bg-white p-3 rounded-xl border border-brand-100">
+                                    <div class="text-[10px] font-bold text-slate-400 uppercase">Waktu Kritis</div>
+                                    <div class="font-bold text-slate-800 text-sm">Pukul 18:00 - 22:00 (51%)</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Right Panel: Text Editor for Intel Brief -->
+                    <div class="lg:col-span-7 bg-white border border-slate-200 rounded-3xl p-6 shadow-sm flex flex-col h-full">
+                        <div class="mb-4">
+                            <h3 class="font-bold text-slate-900 text-lg flex items-center gap-2"><i class="ph-fill ph-file-text text-brand-500"></i> Crime Intelligence Brief (Generated)</h3>
+                            <p class="text-sm text-slate-500 font-medium">Narasi ini dihasilkan otomatis oleh AI berdasarkan data prediksi. Anda dapat mengedit instruksi sebelum dikirim ke dashboard mahasiswa.</p>
+                        </div>
+                        
+                        <!-- Rich Text Editor Mockup -->
+                        <div class="border border-slate-200 rounded-2xl overflow-hidden flex-1 flex flex-col min-h-[400px]">
+                            <div class="bg-slate-50 border-b border-slate-200 p-2 flex gap-1 items-center px-4">
+                                <button class="w-8 h-8 rounded text-slate-700 flex items-center justify-center hover:bg-slate-200 font-bold text-sm bg-white border border-slate-200 shadow-sm">B</button>
+                                <button class="w-8 h-8 rounded text-slate-700 flex items-center justify-center hover:bg-slate-200 italic text-sm">I</button>
+                                <button class="w-8 h-8 rounded text-slate-700 flex items-center justify-center hover:bg-slate-200 underline text-sm">U</button>
+                                <div class="w-px h-5 bg-slate-300 mx-2"></div>
+                                <span class="text-xs font-bold text-brand-500 bg-brand-50 px-2 py-1 rounded">Auto-drafted by AI</span>
+                            </div>
+                            <textarea rows="14" class="w-full p-6 text-sm font-medium focus:outline-none resize-none flex-1 text-slate-700 leading-relaxed bg-white">Berdasarkan analisis dataset kriminalitas kepolisian Jawa Timur tahun 2019–2025 menggunakan model Prophet Forecasting, sistem memperkirakan terjadi peningkatan risiko Pencurian Kendaraan Bermotor (Curanmor) di Kota Surabaya sebesar 18% pada semester pertama tahun 2026. 
+
+Peningkatan secara signifikan diperkirakan terkonsentrasi pada area parkir fasilitas umum dan institusi pendidikan (42% histori), dengan dominasi waktu kejadian saat pergantian aktivitas/minim penjagaan antara pukul 18.00–22.00 WIB.
+
+Tugas Anda sebagai Kriminolog:
+Analisis faktor kerentanan yang menyebabkan tren ini meningkat secara spasial, pilih teori kriminologi yang relevan untuk menjelaskannya, dan rancang strategi pencegahan (Crime Prevention) situasional maupun sosial untuk menekan angka kejahatan sebelum terjadi.</textarea>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- ================= STEP 4: RUBRIK & DISTRIBUSI ================= -->
+            <div id="view-step-4" class="step-view max-w-4xl mx-auto">
+                <div class="mb-8">
+                    <h2 class="text-3xl font-bold text-slate-900 mb-2">Rubrik Penilaian & Publikasi</h2>
+                    <p class="text-slate-500 font-medium">Tentukan bobot kompetensi kriminologi yang akan dievaluasi oleh AI pada laporan mahasiswa.</p>
+                </div>
+
+                <div class="bg-white rounded-3xl p-8 border border-slate-200 shadow-sm space-y-8">
+                    <!-- Rubric Section -->
+                    <div>
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="font-bold text-slate-900 text-lg flex items-center gap-2"><i class="ph-fill ph-clipboard-text text-brand-500"></i> Bobot Penilaian Kompetensi</h3>
+                            <span class="text-xs font-bold text-slate-500 bg-slate-100 px-2 py-1 rounded border border-slate-200">Total: 100%</span>
+                        </div>
+                        <div class="space-y-3">
+                            <div class="flex items-center justify-between p-3 border border-slate-100 rounded-xl bg-slate-50">
+                                <span class="font-bold text-slate-700 text-sm">Kemampuan Menginterpretasi Data Prediktif</span>
+                                <input type="number" value="20" class="w-16 border border-slate-200 rounded-lg px-2 py-1 text-center font-bold text-brand-600 focus:outline-none focus:border-brand-500">
+                            </div>
+                            <div class="flex items-center justify-between p-3 border border-slate-100 rounded-xl bg-slate-50">
+                                <span class="font-bold text-slate-700 text-sm">Penerapan Teori Kriminologi (Misal: Routine Activity)</span>
+                                <input type="number" value="25" class="w-16 border border-slate-200 rounded-lg px-2 py-1 text-center font-bold text-brand-600 focus:outline-none focus:border-brand-500">
+                            </div>
+                            <div class="flex items-center justify-between p-3 border border-slate-100 rounded-xl bg-slate-50">
+                                <span class="font-bold text-slate-700 text-sm">Rancangan Strategi Pencegahan (Crime Prevention)</span>
+                                <input type="number" value="30" class="w-16 border border-slate-200 rounded-lg px-2 py-1 text-center font-bold text-brand-600 focus:outline-none focus:border-brand-500">
+                            </div>
+                            <div class="flex items-center justify-between p-3 border border-slate-100 rounded-xl bg-slate-50">
+                                <span class="font-bold text-slate-700 text-sm">Penyusunan Rekomendasi Kebijakan Taktis</span>
+                                <input type="number" value="25" class="w-16 border border-slate-200 rounded-lg px-2 py-1 text-center font-bold text-brand-600 focus:outline-none focus:border-brand-500">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Class Assignment Section -->
+                    <div class="border-t border-slate-100 pt-6">
+                        <h3 class="font-bold text-slate-900 text-lg mb-4 flex items-center gap-2"><i class="ph-fill ph-users-three text-brand-500"></i> Distribusikan ke Kelas</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <label class="checkbox-pill cursor-pointer relative block">
+                                <input type="checkbox" class="peer sr-only" checked>
+                                <div class="px-5 py-4 rounded-xl border-2 border-slate-200 bg-white text-slate-500 transition-all peer-checked:bg-brand-50 peer-checked:border-brand-500 peer-checked:text-brand-700 flex items-center justify-between">
+                                    <div>
+                                        <div class="font-bold text-sm">Kriminologi Digital A</div>
+                                        <div class="text-[10px] font-bold mt-1 opacity-70">32 Mahasiswa</div>
+                                    </div>
+                                    <i class="ph-bold ph-check-circle text-xl hidden peer-checked:block text-brand-500"></i>
+                                </div>
+                            </label>
+                            <label class="checkbox-pill cursor-pointer relative block">
+                                <input type="checkbox" class="peer sr-only">
+                                <div class="px-5 py-4 rounded-xl border-2 border-slate-200 bg-white text-slate-500 transition-all peer-checked:bg-brand-50 peer-checked:border-brand-500 peer-checked:text-brand-700 flex items-center justify-between">
+                                    <div>
+                                        <div class="font-bold text-sm">Kriminologi Digital B</div>
+                                        <div class="text-[10px] font-bold mt-1 opacity-70">28 Mahasiswa</div>
+                                    </div>
+                                    <i class="ph-bold ph-check-circle text-xl hidden peer-checked:block text-brand-500"></i>
+                                </div>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="pt-6 border-t border-slate-100 flex justify-end gap-3">
+                        <button onclick="switchStep(3)" class="px-6 py-3.5 rounded-xl text-slate-500 font-bold hover:bg-slate-100 transition-colors">Kembali</button>
+                        <button onclick="publishChallenge()" class="px-8 py-3.5 rounded-xl bg-brand-500 hover:bg-brand-600 text-white font-bold shadow-lg shadow-brand-500/30 flex items-center gap-2 transition-transform transform hover:-translate-y-1">
+                            <i class="ph-bold ph-paper-plane-tilt"></i> Publish Challenge
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ================= STEP 5: SUCCESS ================= -->
+            <div id="view-step-5" class="step-view text-center py-20 max-w-2xl mx-auto">
+                <div class="w-24 h-24 bg-emerald-100 text-emerald-500 rounded-full flex items-center justify-center text-5xl mx-auto mb-6 shadow-inner">
+                    <i class="ph-fill ph-check-circle"></i>
+                </div>
+                <h2 class="text-3xl font-bold text-slate-900 mb-3">Challenge Berhasil Dipublikasi!</h2>
+                <p class="text-slate-500 mb-8 font-medium">Skenario Crime Intelligence kini tersedia di dashboard mahasiswa "Kriminologi Digital A". Sistem AI akan mengevaluasi laporan yang disubmit berdasarkan rubrik teori kriminologi Anda.</p>
+                <div class="flex justify-center gap-4">
+                    <button class="px-6 py-3 rounded-xl border border-slate-200 text-slate-600 font-bold hover:bg-slate-50 transition-colors">Lihat di Manajemen Kelas</button>
+                    <button onclick="location.reload()" class="px-6 py-3 rounded-xl bg-slate-900 text-white font-bold shadow-lg hover:bg-slate-800 transition-colors">Buat Kasus Lainnya</button>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <!-- MAIN JAVASCRIPT LOGIC -->
+    <script>
+        const steps = [
+            { id: '1', title: 'Data Parameter', icon: 'ph-database' },
+            { id: '2', title: 'AI Processing', icon: 'ph-cpu' },
+            { id: '3', title: 'Intel Brief Editor', icon: 'ph-file-text' },
+            { id: '4', title: 'Rubrik & Publish', icon: 'ph-paper-plane-tilt' }
+        ];
+        
+        let map = null;
+        let mapInitialized = false;
+
+        window.onload = () => {
+            updateStepper(1);
+        };
+
+        function updateStepper(currentStepIndex) {
+            const container = document.getElementById('stepper-container');
+            if (!container) return;
+            container.innerHTML = '';
+            
+            // Hide stepper on success screen
+            if (currentStepIndex === 5) {
+                container.style.display = 'none';
+                return;
+            } else {
+                container.style.display = 'flex';
+            }
+
+            steps.forEach((step, index) => {
+                const sIdx = index + 1;
+                const isActive = sIdx === currentStepIndex;
+                const isPast = sIdx < currentStepIndex;
+                const colorClass = isActive ? 'text-brand-600 bg-brand-50 border-brand-200' : (isPast ? 'text-emerald-600 bg-emerald-50 border-emerald-200' : 'text-slate-400 bg-white border-slate-200');
+                
+                const stepEl = document.createElement('div');
+                stepEl.className = `flex items-center gap-2 px-3 py-1.5 rounded-full border text-xs font-bold ${colorClass} transition-colors`;
+                stepEl.innerHTML = `
+                    <i class="ph-bold ${isPast ? 'ph-check' : step.icon}"></i>
+                    <span class="hidden md:block">${step.title}</span>
+                `;
+                container.appendChild(stepEl);
+                
+                if (index < steps.length - 1) {
+                    const divider = document.createElement('div');
+                    divider.className = 'w-4 h-px bg-slate-200 hidden md:block';
+                    container.appendChild(divider);
+                }
+            });
+        }
+
+        function switchStep(stepIndex) {
+            document.querySelectorAll('.step-view').forEach(el => {
+                el.classList.remove('active');
+            });
+            const targetView = document.getElementById('view-step-' + stepIndex);
+            if(targetView) {
+                targetView.classList.add('active');
+                
+                // If it's a scrollable container, scroll it. Otherwise scroll window.
+                const scrollContainer = document.querySelector('.custom-scrollbar');
+                if(scrollContainer) scrollContainer.scrollTo({ top: 0, behavior: 'smooth' });
+                else window.scrollTo({ top: 0, behavior: 'smooth' });
+                
+                updateStepper(stepIndex);
+                
+                // Initialize map ONLY when step 3 becomes active
+                if(stepIndex === 3 && !mapInitialized) {
+                    setTimeout(initLeafletMap, 300); // 300ms delay to ensure the container is fully rendered by CSS
+                }
+            }
+        }
+
+        function startForecasting() {
+            switchStep(2);
+            
+            const logsContainer = document.getElementById('ai-logs');
+            const loadingText = document.getElementById('loading-text');
+            
+            logsContainer.innerHTML = '<div class="opacity-50">> Initializing Prophet Forecasting Engine...</div>';
+            
+            const events = [
+                { time: 1000, text: "> Memuat dataset Kepolisian Jatim (2019-2025)... [OK]" },
+                { time: 2000, text: "> Membersihkan outliers & anomali data COVID-19... [OK]" },
+                { time: 3500, text: "> Menjalankan Time-Series Analysis (Seasonality: Yearly, Weekly)..." },
+                { time: 4500, text: "> Mendeteksi pola peningkatan tajam di wilayah perkotaan (Urban Areas)." },
+                { time: 5500, text: "> Generate Output: Surabaya (+18%), Malang (+6%), Jember (-4%)." },
+                { time: 6500, text: "> Menulis rangkuman intelijen via LLM... [SELESAI]" }
+            ];
+
+            let totalTime = 0;
+            events.forEach(event => {
+                setTimeout(() => {
+                    const logEl = document.createElement('div');
+                    logEl.className = 'text-brand-400 font-bold';
+                    logEl.innerText = event.text;
+                    logsContainer.appendChild(logEl);
+                    logsContainer.scrollTop = logsContainer.scrollHeight;
+                }, event.time);
+                totalTime = Math.max(totalTime, event.time);
+            });
+
+            setTimeout(() => {
+                loadingText.innerText = "Prediksi Selesai. Menyiapkan visualisasi...";
+                loadingText.classList.remove('animate-pulse');
+                loadingText.classList.add('text-emerald-500');
+                
+                setTimeout(() => {
+                    switchStep(3);
+                }, 1500);
+            }, totalTime + 1000);
+        }
+
+        function goToRubric() {
+            switchStep(4);
+        }
+        
+        function publishChallenge() {
+            switchStep(5);
+        }
+
+        // ================= LEAFLET HEATMAP INIT =================
+        function initLeafletMap() {
+            if (mapInitialized) return;
+            
+            const mapContainer = document.getElementById('map-preview');
+            // Pastikan lebar dan tinggi div valid (tidak 0) sebelum init
+            if (!mapContainer || mapContainer.offsetWidth === 0) return;
+            
+            // Jatim coordinates
+            map = L.map('map-preview', {
+                zoomControl: false // keep it clean for preview
+            }).setView([-7.6, 112.7], 8);
+
+            // Light, clean basemap
+            L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+                attribution: '&copy; OSM',
+                subdomains: 'abcd',
+                maxZoom: 12
+            }).addTo(map);
+
+            // Format: [lat, lng, intensity]
+            var heatData = [
+                // Surabaya (High Concentration)
+                [-7.250, 112.768, 1.0], [-7.260, 112.750, 0.9], [-7.270, 112.780, 0.8],
+                [-7.290, 112.730, 0.9], [-7.310, 112.740, 0.7],
+                
+                // Malang (Medium)
+                [-7.980, 112.630, 0.5], [-7.950, 112.610, 0.4], [-7.920, 112.590, 0.4],
+                
+                // Jember (Low)
+                [-8.170, 113.700, 0.2], [-8.150, 113.720, 0.2]
+            ];
+
+            // Add Heat Layer
+            if(L.heatLayer) {
+                L.heatLayer(heatData, {
+                    radius: 25,
+                    blur: 15,
+                    maxZoom: 10,
+                    gradient: {0.3: 'yellow', 0.5: 'orange', 0.8: 'red'}
+                }).addTo(map);
+            }
+            
+            // Add a pinpoint for Surabaya to draw attention
+            L.circleMarker([-7.250, 112.768], {
+                radius: 10,
+                color: '#DC2626',
+                fillColor: '#DC2626',
+                fillOpacity: 0.3,
+                className: 'animate-pulse pointer-events-none'
+            }).addTo(map);
+
+            mapInitialized = true;
+        }
+    </script>
+</body>
+</html>
